@@ -20,7 +20,7 @@ animateTextContent.betweenTwoValues = function(elementID, startValue, endValue, 
       }else{
         startValue = startValue - 1;
       }
-      element.textContent = v1;
+      element.textContent = startValue;
     }, timeIncrement * i);
   }
 };
