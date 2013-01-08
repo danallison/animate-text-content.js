@@ -1,79 +1,90 @@
-var animateTextContent = {};
-
-animateTextContent.alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
-                               'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
-
-// animate numerical text between 2 Values, as in animating from, say, 40 to 95 over half a second.
-animateTextContent.betweenTwoValues = function (elementID, startValue, endValue, duration) {
-  var difference = endValue - startValue,
-      element = document.getElementById(elementID),
-      addFrame = 1,
-      frameRate,
-      nextFrame,
-      i;
-  
-  if (difference < 0){
-    difference = difference * -1;
-    addFrame = -1;
-  }
-  
-  frameRate = duration / difference;
-  
-  nextFrame = function () {
-    startValue = startValue + addFrame;
-    element.textContent = startValue;
+var animateTextContent = function (elementID) {
+  var Animator = function (elementID) {
+    this.element = document.getElementById(elementID);
   };
   
-  for (i = 1; i <= difference; i++) {
-    setTimeout(nextFrame, frameRate * i);
-  }
-};
+  Animator.prototype.betweenTwoValues = function (startValue, endValue, duration) {
+    var thiz = this,
+        difference = endValue - startValue,
+        addFrame = 1,
+        frameRate,
+        nextFrame,
+        i;
 
-animateTextContent.erase = function (elementID, duration) {
-  var element = document.getElementById(elementID),
-      originalText = element.textContent,
-      textArray = originalText.split(''),
-      len = originalText.length,
-      frameRate = duration / len,
-      nextFrame,
-      i;
-      
-  nextFrame = function () {
-    textArray.pop();
-    element.textContent = textArray.join('');
+    if (difference < 0){
+      difference = difference * -1;
+      addFrame = -1;
+    }
+
+    frameRate = duration / difference;
+
+    nextFrame = function () {
+      startValue = startValue + addFrame;
+      thiz.element.textContent = startValue;
+    };
+
+    for (i = 1; i <= difference; i++) {
+      setTimeout(nextFrame, frameRate * i);
+    }
+    
+    return thiz;
   };
   
-  for (i = 1; i <= len; i++) {
-    setTimeout(nextFrame, frameRate * i);
-  }
-};
+  Animator.prototype.erase = function (duration) {
+    var thiz = this,
+        originalText = thiz.element.textContent,
+        textArray = originalText.split(''),
+        len = originalText.length,
+        frameRate = duration / len,
+        nextFrame,
+        i;
 
-animateTextContent.typing = function (elementID, text, duration) {
-  var element = document.getElementById(elementID),
-      textArray = text.split(''),
-      typingArray = [],
-      len = text.length,
-      frameRate = duration / len,
-      nextFrame,
-      i;
-      
-  nextFrame = function () {
-    typingArray.push(textArray.shift());
-    element.textContent = typingArray.join('');
+    nextFrame = function () {
+      textArray.pop();
+      thiz.element.textContent = textArray.join('');
+    };
+
+    for (i = 1; i <= len; i++) {
+      setTimeout(nextFrame, frameRate * i);
+    }
+    
+    return thiz;
+  };
+
+  Animator.prototype.typing = function (text, duration) {
+    var thiz = this,
+        textArray = text.split(''),
+        typingArray = [],
+        len = text.length,
+        frameRate = duration / len,
+        nextFrame,
+        i;
+
+    nextFrame = function () {
+      typingArray.push(textArray.shift());
+      thiz.element.textContent = typingArray.join('');
+    };
+
+    for (i = 1; i <= len; i++) {
+      setTimeout(nextFrame, frameRate * i);
+    }
+    
+    return thiz;
+  };
+
+  // TODO refactor this function to keep a consistent frame rate, get rid of `halfDuration`
+  Animator.prototype.eraseAndReplace = function (replacementText, duration) {
+    var thiz = this,
+        halfDuration = duration / 2,
+        afterPause = function () {
+          thiz.typing(replacementText, halfDuration);
+        };
+
+    thiz.erase(halfDuration);
+    setTimeout(afterPause, halfDuration);
+    
+    return thiz;
   };
   
-  for (i = 1; i <= len; i++) {
-    setTimeout(nextFrame, frameRate * i);
-  }
-};
-
-// TODO refactor this function to keep a consistent frame rate, get rid of `halfDuration`
-animateTextContent.eraseAndReplace = function (elementID, replacementText, duration) {
-  var halfDuration = duration / 2,
-      afterPause = function () {
-        animateTextContent.typing(elementID, replacementText, halfDuration)
-      };
-      
-  animateTextContent.erase( elementID, halfDuration );
-  setTimeout(afterPause, halfDuration);
+  return new Animator(elementID);
 };
