@@ -4,16 +4,17 @@ animateTextContent.alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','
                                'n','o','p','q','r','s','t','u','v','w','x','y','z'];
 
 // animate numerical text between 2 Values, as in animating from, say, 40 to 95 over half a second.
-animateTextContent.betweenTwoValues = function(elementID, startValue, endValue, time){
+animateTextContent.betweenTwoValues = function(elementID, startValue, endValue, duration){
   var difference = endValue - startValue,
-      timeIncrement = time/difference,
       element = document.getElementById(elementID);
   
   if(difference < 0){
     difference = difference * -1;
   }
   
-  for (i = 1; i <= dif; i++) {
+  var timeIncrement = duration/difference;
+  
+  for (var i = 1; i <= difference; i++) {
     window.setTimeout(function() {
       if (startValue < endValue) {
         startValue = startValue + 1;
