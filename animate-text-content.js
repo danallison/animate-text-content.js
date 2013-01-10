@@ -102,21 +102,28 @@ var animateTextContent = function (elementID) {
         len = originalText.length,
         frameRate = duration / len || thiz.frameRate,
         nextFrame,
+        reset,
         funktion,
         i;
+        
+    duration = duration || thiz.frameRate * len;
 
     nextFrame = function () {
       textArray.pop();
       thiz.element.textContent = textArray.join('');
     };
     
+    reset = function () {
+      textArray = originalText.split('');
+    };
+    
     funktion = function () {
       for (i = 1; i <= len; i++) {
         setTimeout(nextFrame, frameRate * i);
       }
+      setTimeout(reset, duration);
     };
     
-    duration = duration || thiz.frameRate * len;
     thiz.queue.push({ funktion: funktion, duration: duration, endText: "" });
     
     return thiz;
@@ -129,21 +136,29 @@ var animateTextContent = function (elementID) {
         len = text.length,
         frameRate = duration / len || thiz.frameRate,
         nextFrame,
+        reset,
         funktion,
         i;
+        
+    duration = duration || thiz.frameRate * len;
     
     nextFrame = function () {
       displayTextArray.push(textArray.shift());
       thiz.element.textContent = displayTextArray.join('');
     };
     
+    reset = function () {
+      textArray = displayTextArray;
+      displayTextArray = [];
+    };
+    
     funktion = function () {
       for (i = 1; i <= len; i++) {
         setTimeout(nextFrame, frameRate * i);
       }
+      setTimeout(reset, duration);
     };
     
-    duration = duration || thiz.frameRate * len;
     thiz.queue.push({ funktion: funktion, duration: duration, endText: text });
     
     return thiz;
