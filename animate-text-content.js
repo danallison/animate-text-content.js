@@ -66,8 +66,10 @@ var animateTextContent = function (elementID) {
     var thiz = this,
         difference = endValue - startValue,
         addFrame = 1,
+        newValue = startValue,
         frameRate,
         nextFrame,
+        reset,
         funktion,
         i;
 
@@ -77,19 +79,24 @@ var animateTextContent = function (elementID) {
     }
 
     frameRate = duration / difference || thiz.frameRate;
+    duration = duration || thiz.frameRate * difference;
 
     nextFrame = function () {
-      startValue = startValue + addFrame;
-      thiz.element.textContent = startValue;
+      newValue += addFrame;
+      thiz.element.textContent = newValue;
+    };
+    
+    reset = function () {
+      newValue = startValue;
     };
     
     funktion = function () {
       for (i = 1; i <= difference; i++) {
         setTimeout(nextFrame, frameRate * i);
       }
+      setTimeout(reset, duration);
     };
     
-    duration = duration || thiz.frameRate * difference;
     thiz.queue.push({ funktion: funktion, duration: duration, endText: endValue });
     
     return thiz;
