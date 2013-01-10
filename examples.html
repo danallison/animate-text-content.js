@@ -24,12 +24,14 @@ div {
     var example = animateTextContent("example"),
         goButton = document.getElementById("go");
     
+    example.defaultPause = 500;
+    example.frameRate = 1000/24;
+    
     example
       .erase()
       .typeIn("I like to eat ")
       .html("I like to eat <span id='fruit'></span>")
-      .switchElement("fruit")
-      .pause(500)
+    .switchElement("fruit")
       .typeIn("apples")
       .pause()
       .erase()
@@ -37,7 +39,27 @@ div {
       .pause()
       .erase()
       .typeIn("oranges")
-      .switchElement("example");
+      .pause()
+      .erase()
+    .switchElement("example")
+      .erase()
+      .pause()
+      .typeIn("I have eaten")
+      .html("I have eaten <span id='number'></span>")
+    .switchElement("number")
+      .rollNumbers(0, 62)
+      .pause()
+    .switchElement("example")
+      .html("I have eaten 62 <span id='blueberries_this_month'></span>")
+    .switchElement("blueberries_this_month")
+      .typeIn("blueberries this month.")
+      .pause()
+    .switchElement("example")
+      .html("I have eaten 62 blueberries this month. <span id='i_counted'></span>")
+    .switchElement("i_counted")
+      .typeIn("I counted.")
+    .switchElement("example");
+      
       
     goButton.addEventListener("click", function () { example.go(); }, false);
   </script>
