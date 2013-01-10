@@ -48,7 +48,7 @@ var animateTextContent = function (elementID) {
     
     thiz.queue.push({ funktion: funktion, duration: 0, endText: html });
     
-    return this;
+    return thiz;
   };
   
   Timeline.prototype.switchElement = function (elementID) {
@@ -59,7 +59,7 @@ var animateTextContent = function (elementID) {
     
     thiz.queue.push({ funktion: funktion, duration: 0, endText: thiz.element.textContent });
     
-    return this;
+    return thiz;
   };
   
   Timeline.prototype.rollNumbers = function (startValue, endValue, duration) {
