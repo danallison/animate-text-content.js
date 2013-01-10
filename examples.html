@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  background: #eee;
+  font: 16px sans-serif;
+  margin: 0;
+}
+
+div {
+  margin: 20px;
+}
+
+</style>
+<body>
+  <div>
+    <header><h1>Examples</h1></header>
+    <div id="example"></div>
+    <button id="go">Go!</button>
+  </div>
+  <script src="animate-text-content.js"></script>
+  <script>
+    var example = animateTextContent("example"),
+        goButton = document.getElementById("go");
+    
+    example
+      .erase()
+      .typeIn("I like to eat ")
+      .html("I like to eat <span id='fruit'></span>")
+      .switchElement("fruit")
+      .pause(500)
+      .typeIn("apples")
+      .pause()
+      .erase()
+      .typeIn("bananas")
+      .pause()
+      .erase()
+      .typeIn("oranges");
+      
+    goButton.addEventListener("click", function () { example.go(); }, false);
+  </script>
+</body>
