@@ -160,7 +160,7 @@ var animateTextContent = function (elementID) {
     return thiz;
   };
   
-  Timeline.prototype.clearQueue = function () {
+  Timeline.prototype.clearTimeline = function () {
     var thiz = this,
     funktion = function () {
       thiz.queue = [];
