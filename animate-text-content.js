@@ -32,8 +32,6 @@ var animateTextContent = function (elementID) {
       } else if (thiz.loop){
         i = 0;
         nextAnimation();
-      } else {
-        thiz.queue = [];
       }
     };
     
