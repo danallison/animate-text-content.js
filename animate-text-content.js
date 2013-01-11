@@ -5,6 +5,8 @@ var animateTextContent = function (elementID) {
     this.queue = [];
     this.defaultPause = 2000;
     this.loop = false;
+    this.duration = 0;
+    this.endText = "";
   };
   
   Timeline.prototype.findText = function () {
@@ -20,22 +22,42 @@ var animateTextContent = function (elementID) {
     return text;
   };
   
-  Timeline.prototype.go = function () {
-    var thiz = this,
-        len = thiz.queue.length,
-        i = 0,
-    nextAnimation = function () {
-      if (i < len) {
-        thiz.queue[i].funktion();
-        setTimeout(nextAnimation, thiz.queue[i].duration);
-        i += 1;
-      } else if (thiz.loop) {
-        i = 0;
-        nextAnimation();
-      }
-    };
+  Timeline.prototype.addToQueue = function (funktion, duration, endText) {
+    this.duration += duration;
+    this.endText = endText;
+    this.queue.push({ funktion: funktion, duration: duration, endText: endText });
+  };
+  
+  Timeline.prototype.go = function (timelineObj) {
+    var thiz = this, 
+        funktion,
+        len,
+        i,
+        nextAnimation;
     
-    nextAnimation();
+    if (timelineObj) {
+      funktion = function () {
+        timelineObj.go();
+      };
+      
+      thiz.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
+    } else {
+      len = thiz.queue.length;
+      i = 0;
+      
+      nextAnimation = function () {
+        if (i < len) {
+          thiz.queue[i].funktion();
+          setTimeout(nextAnimation, thiz.queue[i].duration);
+          i += 1;
+        } else if (thiz.loop) {
+          i = 0;
+          nextAnimation();
+        }
+      };
+      
+      nextAnimation();
+    }
     
     return thiz;
   };
@@ -46,7 +68,7 @@ var animateTextContent = function (elementID) {
       thiz.element.innerHTML = html;
     };
     
-    thiz.queue.push({ funktion: funktion, duration: 0, endText: html });
+    thiz.addToQueue(funktion, 0, html);
     
     return thiz;
   };
@@ -57,7 +79,7 @@ var animateTextContent = function (elementID) {
       thiz.element = document.getElementById(elementID);
     };
     
-    thiz.queue.push({ funktion: funktion, duration: 0, endText: thiz.element.textContent });
+    thiz.addToQueue(funktion, 0, thiz.element.textContent); // TODO fix endText value
     
     return thiz;
   };
@@ -65,7 +87,7 @@ var animateTextContent = function (elementID) {
   Timeline.prototype.custom = function (funktion, duration, endText) {
     var thiz = this;
     
-    thiz.queue.push({ funktion: funktion, duration: duration, endText: endText });
+    thiz.addToQueue(funktion, duration, endText);
     
     return thiz;
   };
@@ -111,7 +133,7 @@ var animateTextContent = function (elementID) {
       setTimeout(reset, duration);
     };
     
-    thiz.queue.push({ funktion: funktion, duration: duration, endText: endValue });
+    thiz.addToQueue(funktion, duration, endValue);
     
     return thiz;
   };
@@ -145,7 +167,7 @@ var animateTextContent = function (elementID) {
       setTimeout(reset, duration);
     };
     
-    thiz.queue.push({ funktion: funktion, duration: duration, endText: "" });
+    thiz.addToQueue(funktion, duration, "");
     
     return thiz;
   };
@@ -180,7 +202,7 @@ var animateTextContent = function (elementID) {
       setTimeout(reset, duration);
     };
     
-    thiz.queue.push({ funktion: funktion, duration: duration, endText: text });
+    thiz.addToQueue(funktion, duration, text);
     
     return thiz;
   };
@@ -191,13 +213,15 @@ var animateTextContent = function (elementID) {
         funktion = function () {};
         
     duration = duration || thiz.defaultPause;
-    thiz.queue.push({ funktion: funktion, duration: duration, endText: endText });
+    thiz.addToQueue(funktion, duration, endText);
     
     return thiz;
   };
   
   Timeline.prototype.clearTimeline = function () {
     this.queue = [];
+    this.duration = 0;
+    this.endText = "";
     
     return this;
   };
