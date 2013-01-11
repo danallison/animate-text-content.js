@@ -29,7 +29,7 @@ var animateTextContent = function (elementID) {
         thiz.queue[i].funktion();
         setTimeout(nextAnimation, thiz.queue[i].duration);
         i += 1;
-      } else if (thiz.loop){
+      } else if (thiz.loop) {
         i = 0;
         nextAnimation();
       }
@@ -62,24 +62,27 @@ var animateTextContent = function (elementID) {
     return thiz;
   };
   
-  Timeline.prototype.rollNumbers = function (startValue, endValue, duration) {
+  Timeline.prototype.rollNumbers = function (startValue, endValue, increment, duration) {
     var thiz = this,
         difference = endValue - startValue,
-        addFrame = 1,
         newValue = startValue,
+        addFrame,
         frameRate,
         nextFrame,
         reset,
         funktion,
         i;
-
-    if (difference < 0){
-      difference = difference * -1;
-      addFrame = -1;
+    
+    increment = increment || 1;
+    addFrame = increment;
+    
+    if (difference < 0) {
+      difference = -difference;
+      addFrame = -addFrame;
     }
 
-    frameRate = duration / difference || thiz.frameRate;
-    duration = duration || thiz.frameRate * difference;
+    frameRate = duration / (difference / increment) || thiz.frameRate;
+    duration = duration || thiz.frameRate * difference / increment;
 
     nextFrame = function () {
       newValue += addFrame;
@@ -87,11 +90,12 @@ var animateTextContent = function (elementID) {
     };
     
     reset = function () {
+      thiz.element.textContent = endValue;
       newValue = startValue;
     };
     
     funktion = function () {
-      for (i = 1; i <= difference; i++) {
+      for (i = 1; i < difference / increment; i++) {
         setTimeout(nextFrame, frameRate * i);
       }
       setTimeout(reset, duration);
