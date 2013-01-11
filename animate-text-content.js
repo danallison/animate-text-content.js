@@ -196,19 +196,10 @@ var animateTextContent = function (elementID) {
     return thiz;
   };
   
-  Timeline.prototype.clearTimeline = function (now) {
-    var thiz = this,
-    funktion = function () {
-      thiz.queue = [];
-    };
+  Timeline.prototype.clearTimeline = function () {
+    this.queue = [];
     
-    if (now === "now") {
-      funktion();
-    } else {
-      thiz.queue.push({ funktion: funktion, duration: 0, endText: thiz.findText() });
-    }
-    
-    return thiz;
+    return this;
   };
   
   return new Timeline(elementID);
