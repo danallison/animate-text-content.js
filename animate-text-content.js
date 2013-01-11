@@ -62,6 +62,14 @@ var animateTextContent = function (elementID) {
     return thiz;
   };
   
+  Timeline.prototype.custom = function (funktion, duration, endText) {
+    var thiz = this;
+    
+    thiz.queue.push({ funktion: funktion, duration: duration, endText: endText });
+    
+    return thiz;
+  };
+  
   Timeline.prototype.rollNumbers = function (startValue, endValue, increment, duration) {
     var thiz = this,
         difference = endValue - startValue,
