@@ -67,6 +67,7 @@ var animateTextContent = function (elementID) {
         difference = endValue - startValue,
         newValue = startValue,
         addFrame,
+        totalFrames,
         frameRate,
         nextFrame,
         reset,
@@ -81,8 +82,9 @@ var animateTextContent = function (elementID) {
       addFrame = -addFrame;
     }
 
-    frameRate = duration / (difference / increment) || thiz.frameRate;
-    duration = duration || thiz.frameRate * difference / increment;
+    totalFrames = difference / increment;
+    frameRate = duration / totalFrames || thiz.frameRate;
+    duration = duration || thiz.frameRate * totalFrames;
 
     nextFrame = function () {
       newValue += addFrame;
@@ -95,7 +97,7 @@ var animateTextContent = function (elementID) {
     };
     
     funktion = function () {
-      for (i = 1; i < difference / increment; i++) {
+      for (i = 1; i < totalFrames; i++) {
         setTimeout(nextFrame, frameRate * i);
       }
       setTimeout(reset, duration);
