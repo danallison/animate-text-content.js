@@ -3,6 +3,8 @@ animate-text-content.js
 
 This JS micro-library allows you to animate the text content of elements in the DOM. It employs the method chaining pattern to construct a timeline of sequential animations.
 
+See documentation [here](https://github.com/danallison/animate-text-content.js/wiki/API-Reference).
+
 Example
 =======
 
@@ -22,7 +24,6 @@ Then, you construct a series of animations, which are placed in a queue in the o
           .typeIn("I like to eat ")
           .html("I like to eat <span id='fruit'></span>")
           .switchElement("fruit")
-          .pause()
           .typeIn("apples")
           .pause()
           .erase()
