@@ -100,6 +100,8 @@
   
     Timeline.prototype.custom = function (funktion, duration, endText) {
       var thiz = this;
+      duration = duration || 0;
+      endText = endText || thiz.findText();
     
       thiz.addToQueue(funktion, duration, endText);
     
