@@ -16,51 +16,39 @@ div {
 <body>
   <div>
     <header><h1>Examples</h1></header>
-    <div id="example"></div>
-    <button id="go">Go!</button>
+    <div>
+      <h2>typeIn & erase</h2>
+      <div>I like to eat <span id="fruit"></span>.</div>
+    </div>
+    <div>
+      <h2>rollNumbers</h2>
+      <div>Today, I have eaten <span id="number"></span> blueberries.</div>
+    </div>
   </div>
   <script src="animate-text-content.js"></script>
   <script>
-    var example = animateTextContent("example"),
-        goButton = document.getElementById("go");
-    
-    example.defaultPause = 500;
-    example.frameRate = 1000/24;
-    
-    example
-      .erase()
-      .typeIn("I like to eat ")
-      .html("I like to eat <span id='fruit'></span>")
-    .switchElement("fruit")
-      .typeIn("apples")
-      .pause()
-      .erase()
-      .typeIn("bananas")
-      .pause()
-      .erase()
-      .typeIn("oranges")
-      .pause()
-      .erase()
-    .switchElement("example")
-      .erase()
-      .pause()
-      .typeIn("I have eaten")
-      .html("I have eaten <span id='number'></span>")
-    .switchElement("number")
-      .rollNumbers(0, 62)
-      .pause()
-    .switchElement("example")
-      .html("I have eaten 62 <span id='blueberries_this_month'></span>")
-    .switchElement("blueberries_this_month")
-      .typeIn("blueberries this month.")
-      .pause()
-    .switchElement("example")
-      .html("I have eaten 62 blueberries this month. <span id='i_counted'></span>")
-    .switchElement("i_counted")
-      .typeIn("I counted.")
-    .switchElement("example");
-      
-      
-    goButton.addEventListener("click", function () { example.go(); }, false);
+    var fruit = animateTextContent("fruit")
+            .typeIn("apples")
+            .pause(500)
+            .erase()
+            .typeIn("bananas")
+            .pause(500)
+            .erase()
+            .typeIn("oranges")
+            .pause(500)
+            .erase()
+            .go(),
+        number = animateTextContent("number")
+            .rollNumbers(0, 24)
+            .pause(600)
+            .rollNumbers(24, 38)
+            .pause(600)
+            .rollNumbers(38, 56)
+            .pause(600)
+            .rollNumbers(56, 0, 2)
+            .go();
+            
+    fruit.loop = true;
+    number.loop = true;
   </script>
 </body>
