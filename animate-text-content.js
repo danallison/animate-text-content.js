@@ -28,6 +28,19 @@
       this.endText = endText;
       this.queue.push({ funktion: funktion, duration: duration, endText: endText });
     };
+    
+    Timeline.prototype.text = function (text) {
+      var thiz = this,
+          funktion;
+    
+      funktion = function () {
+        thiz.element.textContent = text;
+      };
+    
+      thiz.addToQueue(funktion, 0, text);
+    
+      return thiz;
+    };
   
     Timeline.prototype.go = function (timelineObj) {
       var thiz = this, 
