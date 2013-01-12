@@ -107,6 +107,53 @@
     
       return thiz;
     };
+    
+    Timeline.prototype.frameByFrame = function (frames, loops, duration) {
+      var thiz = this,
+          len = frames.length,
+          lastFrame = frames[len - 1],
+          totalFrames,
+          frameRate,
+          nextFrame,
+          reset,
+          funktion,
+          i,
+          j,
+          k = 1,
+          l = 0;
+          
+      loops = loops || 1;
+      totalFrames = len * loops;
+      duration = duration || totalFrames * thiz.frameRate;
+      frameRate = duration / totalFrames;
+      
+      nextFrame = function () {
+        thiz.element.textContent = frames[l];
+        if (l < len - 1) {
+          l += 1;
+        } else {
+          l = 0;
+        }
+      };
+      
+      reset = function () {
+        k = 1;
+      };
+      
+      funktion = function () {
+        for (i = 0; i < loops; i++) {
+          for (j = 0; j < len; j++) {
+            setTimeout(nextFrame, frameRate * k);
+            k += 1;
+          }
+        }
+        setTimeout(reset, duration);
+      };
+      
+      thiz.addToQueue(funktion, duration, lastFrame);
+      
+      return thiz;
+    };
   
     Timeline.prototype.rollNumbers = function (startValue, endValue, increment, duration) {
       var thiz = this,
