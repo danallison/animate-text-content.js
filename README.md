@@ -8,7 +8,7 @@ See documentation [here](https://github.com/danallison/animate-text-content.js/w
 Example
 =======
 
-To start, you create a Timeline object by calling `animateTextContent`, passing in a DOM element by its ID to act as the stage for the animation:
+To start, you create a Timeline object by calling `atc`, passing in a DOM element by its ID to act as the stage for the animation:
 
 HTML
 
@@ -16,7 +16,7 @@ HTML
         
 JS
 
-        var timeline = animateTextContent("exampleDiv");
+        var timeline = atc("exampleDiv");
         
 Then, you construct a series of animations, which are placed in a queue in the order they are given.
 
