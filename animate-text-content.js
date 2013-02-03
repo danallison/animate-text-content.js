@@ -10,38 +10,6 @@
       this.endText = "";
     };
   
-    Timeline.prototype.findText = function () {
-      var thiz = this,
-          text;
-    
-      try {
-        text = thiz.queue[thiz.queue.length - 1].endText;
-      } catch (e) {
-        text = thiz.element.textContent;
-      }
-    
-      return text;
-    };
-  
-    Timeline.prototype.addToQueue = function (funktion, duration, endText) {
-      this.duration += duration;
-      this.endText = endText;
-      this.queue.push({ funktion: funktion, duration: duration, endText: endText });
-    };
-    
-    Timeline.prototype.text = function (text) {
-      var thiz = this,
-          funktion;
-    
-      funktion = function () {
-        thiz.element.textContent = text;
-      };
-    
-      thiz.addToQueue(funktion, 0, text);
-    
-      return thiz;
-    };
-  
     Timeline.prototype.go = function (timelineObj) {
       var thiz = this, 
           funktion,
@@ -75,7 +43,39 @@
     
       return thiz;
     };
+    
+    Timeline.prototype.findText = function () {
+      var thiz = this,
+          text;
+    
+      try {
+        text = thiz.queue[thiz.queue.length - 1].endText;
+      } catch (e) {
+        text = thiz.element.textContent;
+      }
+    
+      return text;
+    };
   
+    Timeline.prototype.addToQueue = function (funktion, duration, endText) {
+      this.duration += duration;
+      this.endText = endText;
+      this.queue.push({ funktion: funktion, duration: duration, endText: endText });
+    };
+    
+    Timeline.prototype.text = function (text) {
+      var thiz = this,
+          funktion;
+    
+      funktion = function () {
+        thiz.element.textContent = text;
+      };
+    
+      thiz.addToQueue(funktion, 0, text);
+    
+      return thiz;
+    };
+    
     Timeline.prototype.html = function (html) {
       var thiz = this,
       funktion = function () {
@@ -291,4 +291,4 @@
   
     return new Timeline(elementID);
   };
-})();
+}());
