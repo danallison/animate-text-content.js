@@ -22,9 +22,9 @@
           timelineObj.go();
         };
       
-        thiz.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
+        this.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
       } else {
-        len = thiz.queue.length;
+        len = this.queue.length;
         i = 0;
       
         nextAnimation = function () {
@@ -41,17 +41,16 @@
         nextAnimation();
       }
     
-      return thiz;
+      return this;
     };
     
     Timeline.prototype.findText = function () {
-      var thiz = this,
-          text;
+      var text;
     
       try {
-        text = thiz.queue[thiz.queue.length - 1].endText;
+        text = this.queue[this.queue.length - 1].endText;
       } catch (e) {
-        text = thiz.element.textContent;
+        text = this.element.textContent;
       }
     
       return text;
@@ -71,9 +70,9 @@
         thiz.element.textContent = text;
       };
     
-      thiz.addToQueue(funktion, 0, text);
+      this.addToQueue(funktion, 0, text);
     
-      return thiz;
+      return this;
     };
     
     Timeline.prototype.html = function (html) {
@@ -82,9 +81,9 @@
         thiz.element.innerHTML = html;
       };
     
-      thiz.addToQueue(funktion, 0, html);
+      this.addToQueue(funktion, 0, html);
     
-      return thiz;
+      return this;
     };
   
     Timeline.prototype.switchElement = function (elementID) {
@@ -93,19 +92,18 @@
         thiz.element = document.getElementById(elementID);
       };
     
-      thiz.addToQueue(funktion, 0, thiz.element.textContent); // TODO fix endText value
+      this.addToQueue(funktion, 0, this.element.textContent); // TODO fix endText value
     
-      return thiz;
+      return this;
     };
   
     Timeline.prototype.custom = function (funktion, duration, endText) {
-      var thiz = this;
       duration = duration || 0;
-      endText = endText || thiz.findText();
+      endText = endText || this.findText();
     
-      thiz.addToQueue(funktion, duration, endText);
+      this.addToQueue(funktion, duration, endText);
     
-      return thiz;
+      return this;
     };
     
     Timeline.prototype.frameByFrame = function (frames, loops, duration) {
@@ -124,7 +122,7 @@
           
       loops = loops || 1;
       totalFrames = len * loops;
-      duration = duration || totalFrames * thiz.frameRate;
+      duration = duration || totalFrames * this.frameRate;
       frameRate = duration / totalFrames;
       
       nextFrame = function () {
@@ -150,9 +148,9 @@
         setTimeout(reset, duration);
       };
       
-      thiz.addToQueue(funktion, duration, lastFrame);
+      this.addToQueue(funktion, duration, lastFrame);
       
-      return thiz;
+      return this;
     };
   
     Timeline.prototype.rollNumbers = function (startValue, endValue, increment, duration) {
@@ -176,8 +174,8 @@
       }
 
       totalFrames = difference / increment;
-      frameRate = duration / totalFrames || thiz.frameRate;
-      duration = duration || thiz.frameRate * totalFrames;
+      frameRate = duration / totalFrames || this.frameRate;
+      duration = duration || this.frameRate * totalFrames;
 
       nextFrame = function () {
         newValue += addFrame;
@@ -196,23 +194,23 @@
         setTimeout(reset, duration);
       };
     
-      thiz.addToQueue(funktion, duration, endValue);
+      this.addToQueue(funktion, duration, endValue);
     
-      return thiz;
+      return this;
     };
   
     Timeline.prototype.erase = function (duration) {
       var thiz = this,
-          originalText = thiz.findText(),
+          originalText = this.findText(),
           textArray = originalText.split(''),
           len = originalText.length,
-          frameRate = duration / len || thiz.frameRate,
+          frameRate = duration / len || this.frameRate,
           nextFrame,
           reset,
           funktion,
           i;
         
-      duration = duration || thiz.frameRate * len;
+      duration = duration || this.frameRate * len;
 
       nextFrame = function () {
         textArray.pop();
@@ -230,9 +228,9 @@
         setTimeout(reset, duration);
       };
     
-      thiz.addToQueue(funktion, duration, "");
+      this.addToQueue(funktion, duration, "");
     
-      return thiz;
+      return this;
     };
 
     Timeline.prototype.typeIn = function (text, duration) {
@@ -240,13 +238,13 @@
           textArray = text.split(''),
           displayTextArray = [],
           len = text.length,
-          frameRate = duration / len || thiz.frameRate,
+          frameRate = duration / len || this.frameRate,
           nextFrame,
           reset,
           funktion,
           i;
         
-      duration = duration || thiz.frameRate * len;
+      duration = duration || this.frameRate * len;
     
       nextFrame = function () {
         displayTextArray.push(textArray.shift());
@@ -265,20 +263,19 @@
         setTimeout(reset, duration);
       };
     
-      thiz.addToQueue(funktion, duration, text);
+      this.addToQueue(funktion, duration, text);
     
-      return thiz;
+      return this;
     };
   
     Timeline.prototype.pause = function (duration) {
-      var thiz = this,
-          endText = thiz.findText(),
+      var endText = this.findText(),
           funktion = function () {};
         
-      duration = duration || thiz.defaultPause;
-      thiz.addToQueue(funktion, duration, endText);
+      duration = duration || this.defaultPause;
+      this.addToQueue(funktion, duration, endText);
     
-      return thiz;
+      return this;
     };
   
     Timeline.prototype.clearTimeline = function () {
