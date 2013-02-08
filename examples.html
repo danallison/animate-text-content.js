@@ -4,7 +4,7 @@
 
 body {
   background: #eee;
-  font: 16px sans-serif;
+  font: 18px sans-serif;
   margin: 0;
 }
 
@@ -24,31 +24,54 @@ div {
       <h2>rollNumbers</h2>
       <div>Today, I have eaten <span id="number"></span> blueberries.</div>
     </div>
+    <div>
+      <h2>frameByFrame</h2>
+      <div id="smile"></div>
+    </div>
+    <div>
+      <h2>custom</h2>
+      <div>My favorite color is <span id="color"></span>.</div>
+    </div>
   </div>
   <script src="animate-text-content.js"></script>
   <script>
-    var fruit = atc("fruit")
-            .typeIn("apples")
-            .pause(500)
-            .erase()
-            .typeIn("bananas")
-            .pause(500)
-            .erase()
-            .typeIn("oranges")
-            .pause(500)
-            .erase()
-            .go(),
-        number = atc("number")
-            .rollNumbers(0, 24)
-            .pause(600)
-            .rollNumbers(24, 38)
-            .pause(600)
-            .rollNumbers(38, 56)
-            .pause(600)
-            .rollNumbers(56, 0, 2)
-            .go();
-            
+    var fruit, fruits, number, smile, smiles, color, colors;
+    
+    fruit = atc("fruit");
     fruit.loop = true;
+    fruits = ["apples", "bananas", "oranges", "kiwis", "tomatoes", "lemons", "limes", "grapefruit", "plums", "peaches", "star fruit", "coconut", "pears"];
+    for (var i = 0, len = fruits.length; i < len; i++) {
+      fruit.typeIn(fruits[i]).pause(500).erase();
+    }
+    fruit.go();
+      
+    number = atc("number")
+      .rollNumbers(0, 24)
+      .pause(600)
+      .rollNumbers(24, 38)
+      .pause(600)
+      .rollNumbers(38, 56)
+      .pause(600)
+      .rollNumbers(56, 0, 2)
+      .go();
     number.loop = true;
+    
+    smile = atc("smile");
+    smile.loop = true;
+    smiles = ["smile. :)", "mile.s :]", "ile.sm :}", "le.smi :D", "e.smil :|", ".smile :P"];
+    smile.frameByFrame(smiles, 1, 2000).go();
+    
+    color = atc("color");
+    color.loop = true;
+    color.element.style.fontWeight = "bold";
+    colors = ["red", "green", "yellow", "blue", "grey", "black"]
+    for (var i = 0, len = colors.length; i < len; i++) {
+      var j = 0 // j is necessary for the custom function due to the fact that the function gets called after the for loop has already completed, at which time i = len
+      color.text(colors[i]).custom(function () {
+        color.element.style.color = colors[j]; 
+        if (j < len - 1) { j++; } else { j = 0; }
+      }, 1000);
+    }
+    color.go();
   </script>
 </body>
