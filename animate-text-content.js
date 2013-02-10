@@ -63,16 +63,20 @@
     };
     
     Timeline.prototype.text = function (text) {
-      var thiz = this,
-          funktion;
+      if (text) {
+        var thiz = this,
+            funktion;
     
-      funktion = function () {
-        thiz.element.textContent = text;
-      };
+        funktion = function () {
+          thiz.element.textContent = text;
+        };
     
-      this.addToQueue(funktion, 0, text);
+        this.addToQueue(funktion, 0, text);
     
-      return this;
+        return this;
+      } else {
+        return this.element.textContent;
+      }
     };
     
     Timeline.prototype.html = function (html) {
