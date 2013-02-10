@@ -4,8 +4,10 @@
       this.element = document.getElementById(elementID);
       this.frameRate = 1000/24;
       this.queue = [];
+      this.queueIndex = 0;
       this.defaultPause = 2000;
       this.loop = false;
+      this.stopped = false;
       this.duration = 0;
       this.endText = "";
     };
@@ -14,7 +16,6 @@
       var thiz = this, 
           funktion,
           len,
-          i,
           nextAnimation;
     
       if (timelineObj) {
@@ -25,21 +26,34 @@
         this.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
       } else {
         len = this.queue.length;
-        i = 0;
-      
+        this.stopped = false;
+        
         nextAnimation = function () {
-          if (i < len) {
-            thiz.queue[i].funktion();
-            setTimeout(nextAnimation, thiz.queue[i].duration);
-            i += 1;
-          } else if (thiz.loop) {
-            i = 0;
-            nextAnimation();
+          if (thiz.queueIndex < len && !thiz.stopped) {
+            thiz.queue[thiz.queueIndex].funktion();
+            setTimeout(nextAnimation, thiz.queue[thiz.queueIndex].duration);
+            thiz.queueIndex += 1;
+          } else if (!thiz.stopped) {
+            thiz.queueIndex = 0;
+            if (thiz.loop) {
+              nextAnimation();
+            }
           }
         };
       
         nextAnimation();
       }
+    
+      return this;
+    };
+    
+    Timeline.prototype.stop = function () {
+      var thiz = this,
+      funktion = function () {
+        thiz.stopped = true;
+      };
+    
+      this.addToQueue(funktion, 0, this.findText());
     
       return this;
     };
