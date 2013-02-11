@@ -100,6 +100,13 @@
       this.queue.push({ funktion: funktion, duration: duration, endText: endText });
     };
     
+    Timeline.prototype.on = function (eventType, funktion, useCapture) {
+      useCapture = useCapture || false;
+      this.element.addEventListener(eventType, funktion, useCapture);
+      
+      return this;
+    };
+    
     Timeline.prototype.text = function (text) {
       if (text) {
         var thiz = this,
