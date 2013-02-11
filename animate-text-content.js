@@ -2,19 +2,22 @@
   atc = function (elementID) {
     var Timeline = function (elementID) {
       this.element = document.getElementById(elementID);
-      this.frameRate = 1000/24;
       this.queue = [];
-      this.defaultPause = 2000;
-      this.loop = false;
+      this.queueIndex = 0;
+      this.stopped = false;
       this.duration = 0;
       this.endText = "";
+      this.defaults = {
+        frameRate: atc.defaults.frameRate,
+        pauseDuration: atc.defaults.pauseDuration,
+        loop: atc.defaults.loop
+      };
     };
   
     Timeline.prototype.go = function (timelineObj) {
       var thiz = this, 
           funktion,
           len,
-          i,
           nextAnimation;
     
       if (timelineObj) {
@@ -25,22 +28,57 @@
         this.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
       } else {
         len = this.queue.length;
-        i = 0;
-      
+        this.stopped = false;
+        
         nextAnimation = function () {
-          if (i < len) {
-            thiz.queue[i].funktion();
-            setTimeout(nextAnimation, thiz.queue[i].duration);
-            i += 1;
-          } else if (thiz.loop) {
-            i = 0;
-            nextAnimation();
+          if (thiz.queueIndex < len && !thiz.stopped) {
+            thiz.queue[thiz.queueIndex].funktion();
+            setTimeout(nextAnimation, thiz.queue[thiz.queueIndex].duration);
+            thiz.queueIndex += 1;
+          } else if (!thiz.stopped) {
+            thiz.queueIndex = 0;
+            if (thiz.defaults.loop) {
+              nextAnimation();
+            }
           }
         };
       
         nextAnimation();
       }
     
+      return this;
+    };
+    
+    Timeline.prototype.stop = function () {
+      var thiz = this,
+      funktion = function () {
+        thiz.stopped = true;
+      };
+    
+      this.addToQueue(funktion, 0, this.findText());
+    
+      return this;
+    };
+    
+    Timeline.prototype.frameRate = function (frameRate) {
+      this.defaults.frameRate = frameRate || this.defaults.frameRate;
+      
+      return this;
+    };
+    
+    Timeline.prototype.pauseDuration = function (duration) {
+      this.defaults.pauseDuration = duration || this.defaults.pauseDuration;
+      
+      return this;
+    };
+    
+    Timeline.prototype.loop = function (bool) {
+      if (typeof bool === "undefined") {
+        this.defaults.loop = true;
+      } else {
+        this.defaults.loop = bool;
+      }
+      
       return this;
     };
     
@@ -62,17 +100,28 @@
       this.queue.push({ funktion: funktion, duration: duration, endText: endText });
     };
     
-    Timeline.prototype.text = function (text) {
-      var thiz = this,
-          funktion;
-    
-      funktion = function () {
-        thiz.element.textContent = text;
-      };
-    
-      this.addToQueue(funktion, 0, text);
-    
+    Timeline.prototype.on = function (eventType, funktion, useCapture) {
+      useCapture = useCapture || false;
+      this.element.addEventListener(eventType, funktion, useCapture);
+      
       return this;
+    };
+    
+    Timeline.prototype.text = function (text) {
+      if (text) {
+        var thiz = this,
+            funktion;
+    
+        funktion = function () {
+          thiz.element.textContent = text;
+        };
+    
+        this.addToQueue(funktion, 0, text);
+    
+        return this;
+      } else {
+        return this.element.textContent;
+      }
     };
     
     Timeline.prototype.html = function (html) {
@@ -122,7 +171,7 @@
           
       loops = loops || 1;
       totalFrames = len * loops;
-      duration = duration || totalFrames * this.frameRate;
+      duration = duration || totalFrames * this.defaults.frameRate;
       frameRate = duration / totalFrames;
       
       nextFrame = function () {
@@ -174,8 +223,8 @@
       }
 
       totalFrames = difference / increment;
-      frameRate = duration / totalFrames || this.frameRate;
-      duration = duration || this.frameRate * totalFrames;
+      frameRate = duration / totalFrames || this.defaults.frameRate;
+      duration = duration || this.defaults.frameRate * totalFrames;
 
       nextFrame = function () {
         newValue += addFrame;
@@ -204,13 +253,13 @@
           originalText = this.findText(),
           textArray = originalText.split(''),
           len = originalText.length,
-          frameRate = duration / len || this.frameRate,
+          frameRate = duration / len || this.defaults.frameRate,
           nextFrame,
           reset,
           funktion,
           i;
         
-      duration = duration || this.frameRate * len;
+      duration = duration || this.defaults.frameRate * len;
 
       nextFrame = function () {
         textArray.pop();
@@ -238,13 +287,13 @@
           textArray = text.split(''),
           displayTextArray = [],
           len = text.length,
-          frameRate = duration / len || this.frameRate,
+          frameRate = duration / len || this.defaults.frameRate,
           nextFrame,
           reset,
           funktion,
           i;
         
-      duration = duration || this.frameRate * len;
+      duration = duration || this.defaults.frameRate * len;
     
       nextFrame = function () {
         displayTextArray.push(textArray.shift());
@@ -272,7 +321,7 @@
       var endText = this.findText(),
           funktion = function () {};
         
-      duration = duration || this.defaultPause;
+      duration = duration || this.defaults.pauseDuration;
       this.addToQueue(funktion, duration, endText);
     
       return this;
@@ -287,5 +336,33 @@
     };
   
     return new Timeline(elementID);
+  };
+  
+  atc.defaults = {
+    frameRate: 1000/24,
+    pauseDuration: 2000,
+    loop: false
+  };
+  
+  atc.frameRate = function (frameRate) {
+    atc.defaults.frameRate = frameRate || atc.defaults.frameRate;
+    
+    return atc;
+  };
+  
+  atc.pauseDuration = function (duration) {
+    atc.defaults.pauseDuration = duration || atc.defaults.pauseDuration;
+    
+    return atc;
+  };
+  
+  atc.loop = function (bool) {
+    if (typeof bool === "undefined") {
+      atc.defaults.loop = true;
+    } else {
+      atc.defaults.loop = bool;
+    }
+    
+    return atc;
   };
 }());
