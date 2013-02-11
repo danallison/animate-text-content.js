@@ -60,6 +60,28 @@
       return this;
     };
     
+    Timeline.prototype.frameRate = function (frameRate) {
+      this.defaults.frameRate = frameRate || this.defaults.frameRate;
+      
+      return this;
+    };
+    
+    Timeline.prototype.pauseDuration = function (duration) {
+      this.defaults.pauseDuration = duration || this.defaults.pauseDuration;
+      
+      return this;
+    };
+    
+    Timeline.prototype.loop = function (bool) {
+      if (typeof bool === "undefined") {
+        this.defaults.loop = true;
+      } else {
+        this.defaults.loop = bool;
+      }
+      
+      return this;
+    };
+    
     Timeline.prototype.findText = function () {
       var text;
     
@@ -313,5 +335,27 @@
     frameRate: 1000/24,
     pauseDuration: 2000,
     loop: false
+  };
+  
+  atc.frameRate = function (frameRate) {
+    atc.defaults.frameRate = frameRate || atc.defaults.frameRate;
+    
+    return atc;
+  };
+  
+  atc.pauseDuration = function (duration) {
+    atc.defaults.pauseDuration = duration || atc.defaults.pauseDuration;
+    
+    return atc;
+  };
+  
+  atc.loop = function (bool) {
+    if (typeof bool === "undefined") {
+      atc.defaults.loop = true;
+    } else {
+      atc.defaults.loop = bool;
+    }
+    
+    return atc;
   };
 }());
