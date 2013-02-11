@@ -2,14 +2,16 @@
   atc = function (elementID) {
     var Timeline = function (elementID) {
       this.element = document.getElementById(elementID);
-      this.frameRate = 1000/24;
       this.queue = [];
       this.queueIndex = 0;
-      this.defaultPause = 2000;
-      this.loop = false;
       this.stopped = false;
       this.duration = 0;
       this.endText = "";
+      this.defaults = {
+        frameRate: atc.defaults.frameRate,
+        pauseDuration: atc.defaults.pauseDuration,
+        loop: atc.defaults.loop
+      };
     };
   
     Timeline.prototype.go = function (timelineObj) {
@@ -35,7 +37,7 @@
             thiz.queueIndex += 1;
           } else if (!thiz.stopped) {
             thiz.queueIndex = 0;
-            if (thiz.loop) {
+            if (thiz.defaults.loop) {
               nextAnimation();
             }
           }
@@ -140,7 +142,7 @@
           
       loops = loops || 1;
       totalFrames = len * loops;
-      duration = duration || totalFrames * this.frameRate;
+      duration = duration || totalFrames * this.defaults.frameRate;
       frameRate = duration / totalFrames;
       
       nextFrame = function () {
@@ -192,8 +194,8 @@
       }
 
       totalFrames = difference / increment;
-      frameRate = duration / totalFrames || this.frameRate;
-      duration = duration || this.frameRate * totalFrames;
+      frameRate = duration / totalFrames || this.defaults.frameRate;
+      duration = duration || this.defaults.frameRate * totalFrames;
 
       nextFrame = function () {
         newValue += addFrame;
@@ -222,13 +224,13 @@
           originalText = this.findText(),
           textArray = originalText.split(''),
           len = originalText.length,
-          frameRate = duration / len || this.frameRate,
+          frameRate = duration / len || this.defaults.frameRate,
           nextFrame,
           reset,
           funktion,
           i;
         
-      duration = duration || this.frameRate * len;
+      duration = duration || this.defaults.frameRate * len;
 
       nextFrame = function () {
         textArray.pop();
@@ -256,13 +258,13 @@
           textArray = text.split(''),
           displayTextArray = [],
           len = text.length,
-          frameRate = duration / len || this.frameRate,
+          frameRate = duration / len || this.defaults.frameRate,
           nextFrame,
           reset,
           funktion,
           i;
         
-      duration = duration || this.frameRate * len;
+      duration = duration || this.defaults.frameRate * len;
     
       nextFrame = function () {
         displayTextArray.push(textArray.shift());
@@ -290,7 +292,7 @@
       var endText = this.findText(),
           funktion = function () {};
         
-      duration = duration || this.defaultPause;
+      duration = duration || this.defaults.pauseDuration;
       this.addToQueue(funktion, duration, endText);
     
       return this;
@@ -305,5 +307,11 @@
     };
   
     return new Timeline(elementID);
+  };
+  
+  atc.defaults = {
+    frameRate: 1000/24,
+    pauseDuration: 2000,
+    loop: false
   };
 }());
