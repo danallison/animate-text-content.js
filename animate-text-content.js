@@ -73,12 +73,8 @@
     };
     
     Timeline.prototype.loop = function (bool) {
-      if (typeof bool === "undefined") {
-        this.defaults.loop = true;
-      } else {
-        this.defaults.loop = bool;
-      }
-      
+      this.defaults.loop = typeof bool === "undefined" ? true : bool;
+
       return this;
     };
     
@@ -357,11 +353,7 @@
   };
   
   atc.loop = function (bool) {
-    if (typeof bool === "undefined") {
-      atc.defaults.loop = true;
-    } else {
-      atc.defaults.loop = bool;
-    }
+    atc.defaults.loop = typeof bool === "undefined" ? true : bool;
     
     return atc;
   };
