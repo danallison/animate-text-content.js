@@ -1,7 +1,7 @@
 (function () {
   atc = function (elementID) {
     var Timeline = function (elementID) {
-      this.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
+      this.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID || {};
       this.queue = [];
       this.queueIndex = 0;
       this.stopped = false;
