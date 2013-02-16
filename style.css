@@ -11,12 +11,12 @@
 body {
   background: url('subtle_dots.png') #eee;
   font-size: 18px;
-  font-family: 'Helvetica' sans-serif;
+  font-family: 'Helvetica', sans-serif;
   margin: 0;
 }
 header {
   background: url('subtle_carbon.png') #1F5C2F;
-  font-family: 'NewRegular' Helvetica sans-serif;
+  font-family: 'NewRegular', Helvetica, sans-serif;
   color: #eee;
   opacity: 0.8;
   padding: 10px 30px;
