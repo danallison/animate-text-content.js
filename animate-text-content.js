@@ -1,7 +1,7 @@
 (function () {
   atc = function (elementID) {
     var Timeline = function (elementID) {
-      this.element = document.getElementById(elementID);
+      this.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID || {};
       this.queue = [];
       this.queueIndex = 0;
       this.stopped = false;
@@ -73,12 +73,8 @@
     };
     
     Timeline.prototype.loop = function (bool) {
-      if (typeof bool === "undefined") {
-        this.defaults.loop = true;
-      } else {
-        this.defaults.loop = bool;
-      }
-      
+      this.defaults.loop = typeof bool === "undefined" ? true : bool;
+
       return this;
     };
     
@@ -138,7 +134,7 @@
     Timeline.prototype.switchElement = function (elementID) {
       var thiz = this,
       funktion = function () {
-        thiz.element = document.getElementById(elementID);
+        thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
       };
     
       this.addToQueue(funktion, 0, this.element.textContent); // TODO fix endText value
@@ -161,40 +157,23 @@
           lastFrame = frames[len - 1],
           totalFrames,
           frameRate,
-          nextFrame,
-          reset,
           funktion,
-          i,
-          j,
-          k = 1,
-          l = 0;
+          i = 0;
           
       loops = loops || 1;
       totalFrames = len * loops;
       duration = duration || totalFrames * this.defaults.frameRate;
       frameRate = duration / totalFrames;
       
-      nextFrame = function () {
-        thiz.element.textContent = frames[l];
-        if (l < len - 1) {
-          l += 1;
-        } else {
-          l = 0;
-        }
-      };
-      
-      reset = function () {
-        k = 1;
-      };
-      
       funktion = function () {
-        for (i = 0; i < loops; i++) {
-          for (j = 0; j < len; j++) {
-            setTimeout(nextFrame, frameRate * k);
-            k += 1;
-          }
+        if (i < totalFrames) {
+          thiz.element.textContent = frames[i % len];
+          
+          setTimeout(funktion, frameRate);
+          i++;
+        } else {
+          i = 0;
         }
-        setTimeout(reset, duration);
       };
       
       this.addToQueue(funktion, duration, lastFrame);
@@ -209,10 +188,8 @@
           addFrame,
           totalFrames,
           frameRate,
-          nextFrame,
-          reset,
           funktion,
-          i;
+          i = 0;
     
       increment = increment || 1;
       addFrame = increment;
@@ -225,22 +202,19 @@
       totalFrames = difference / increment;
       frameRate = duration / totalFrames || this.defaults.frameRate;
       duration = duration || this.defaults.frameRate * totalFrames;
-
-      nextFrame = function () {
-        newValue += addFrame;
-        thiz.element.textContent = newValue;
-      };
-    
-      reset = function () {
-        thiz.element.textContent = endValue;
-        newValue = startValue;
-      };
     
       funktion = function () {
-        for (i = 1; i < totalFrames; i++) {
-          setTimeout(nextFrame, frameRate * i);
+        if (i < totalFrames) {
+          newValue += addFrame;
+          thiz.element.textContent = newValue;
+          
+          setTimeout(funktion, frameRate);
+          i++;
+        } else {
+          thiz.element.textContent = endValue;
+          newValue = startValue;
+          i = 0;
         }
-        setTimeout(reset, duration);
       };
     
       this.addToQueue(funktion, duration, endValue);
@@ -254,27 +228,22 @@
           textArray = originalText.split(''),
           len = originalText.length,
           frameRate = duration / len || this.defaults.frameRate,
-          nextFrame,
-          reset,
           funktion,
-          i;
+          i = 0;
         
       duration = duration || this.defaults.frameRate * len;
-
-      nextFrame = function () {
-        textArray.pop();
-        thiz.element.textContent = textArray.join('');
-      };
-    
-      reset = function () {
-        textArray = originalText.split('');
-      };
     
       funktion = function () {
-        for (i = 1; i <= len; i++) {
-          setTimeout(nextFrame, frameRate * i);
+        if (i < len) {
+          textArray.pop();
+          thiz.element.textContent = textArray.join('');
+          
+          setTimeout(funktion, frameRate);
+          i++;
+        } else {
+          textArray = originalText.split('');
+          i = 0;
         }
-        setTimeout(reset, duration);
       };
     
       this.addToQueue(funktion, duration, "");
@@ -288,28 +257,23 @@
           displayTextArray = [],
           len = text.length,
           frameRate = duration / len || this.defaults.frameRate,
-          nextFrame,
-          reset,
           funktion,
-          i;
+          i = 0;
         
       duration = duration || this.defaults.frameRate * len;
-    
-      nextFrame = function () {
-        displayTextArray.push(textArray.shift());
-        thiz.element.textContent = displayTextArray.join('');
-      };
-    
-      reset = function () {
-        textArray = displayTextArray;
-        displayTextArray = [];
-      };
-    
+      
       funktion = function () {
-        for (i = 1; i <= len; i++) {
-          setTimeout(nextFrame, frameRate * i);
+        if (i < len) {
+          displayTextArray.push(textArray.shift());
+          thiz.element.textContent = displayTextArray.join('');
+          
+          setTimeout(funktion, frameRate);
+          i++;
+        } else {
+          textArray = displayTextArray;
+          displayTextArray = [];
+          i = 0;
         }
-        setTimeout(reset, duration);
       };
     
       this.addToQueue(funktion, duration, text);
@@ -357,11 +321,7 @@
   };
   
   atc.loop = function (bool) {
-    if (typeof bool === "undefined") {
-      atc.defaults.loop = true;
-    } else {
-      atc.defaults.loop = bool;
-    }
+    atc.defaults.loop = typeof bool === "undefined" ? true : bool;
     
     return atc;
   };

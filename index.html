@@ -1,128 +1,76 @@
 <!DOCTYPE html>
+<head>
 <meta charset="utf-8">
-<style>
-
-body {
-  background: #eee;
-  font: 18px sans-serif;
-  margin: 0;
-}
-
-div {
-  margin: 20px;
-}
-
-</style>
+<title>animate-text-content.js</title>
+<link href="style.css" rel="stylesheet">
+<script src="animate-text-content.js"></script>
+</head>
 <body>
+  <header>
+    <h1 id="atcTitle">animate-text-content.js</h1>
+    <script>
+      atc.frameRate(1000/16);
+      atc("atcTitle").frameRate(1000/18).text(" ").typeIn("animate-text-content.js").go();
+    </script>
+  </header>
   <div>
-    <header><h1>Examples</h1></header>
     <div>
-      <h2>typeIn & erase</h2>
-      <div>I like to eat <span id="fruit">pears</span>.</div>
-      <input type="button" value="What else do I like to eat?" id="fruitButton">
+      Animate-text-content.js is a small JS library that allows you to change text over time. Play with the examples below, check out the <a href="https://github.com/danallison/animate-text-content.js/wiki/API-Reference">documentation</a>, or fork it on <a href="https://github.com/danallison/animate-text-content.js">Github</a>.
+    </div>
+    <h2>Examples</h2>
+    <div>
+      <h3>typeIn</h3>
+      <span>Type in a string of text, one character at a time.</span>
+      <div>
+        <span class="html">&lt;div id='typeInExample'&gt;</span><span id="typeInExample"></span><span class="html">&lt;/div&gt;</span>
+      </div>
+      <div class="js">
+        atc('typeInExample').typeIn('<input id="typeInput" type="text" placeholder="type something here">')
+        <input id="typeInButton" type="button" value=".go()">
+      </div>
+      <script>
+        var typeInput = document.getElementById("typeInput");
+        atc("typeInButton").on("click", function () {
+          atc("typeInExample").typeIn(typeInput.value).go();
+        });
+      </script>
     </div>
     <div>
-      <h2>rollNumbers</h2>
-      <div>Today, I have eaten <span id="blueberries">0</span> blueberries.</div>
-      <input type="button" value="Eat some blueberries" id="eatButton">
+      <h3>rollNumbers</h3>
+      <span>Roll up or down between two numbers.</span>
+      <div>
+        <span class="html">&lt;span id='rollNumExample'&gt;</span><span id="rollNumExample"></span><span class="html">&lt;/span&gt;</span>
+      </div>
+      <div class="js">
+        atc('rollNumExample').rollNumbers(<input id="rollInput1" type="text" placeholder="type a number">, <input id="rollInput2" type="text" placeholder="type another number">)
+        <input id="rollButton" type="button" value=".go()">
+      </div>
+      <script>
+        var rollInput1 = document.getElementById("rollInput1"),
+            rollInput2 = document.getElementById("rollInput2");
+        atc("rollButton").on("click", function () {
+          atc("rollNumExample").rollNumbers(parseInt(rollInput1.value), parseInt(rollInput2.value)).go();
+        });
+      </script>
     </div>
     <div>
-      <h2>frameByFrame</h2>
-      <div id="smile"></div>
+      <h3>frameByFrame</h3>
+      <span>Construct an animation from an array of strings, each one representing a single frame.</span>
+      <div>
+        <span class="html">&lt;span id='frameByFrameExample'&gt;</span><span id="frameByFrameExample"></span><span class="html">&lt;/span&gt;</span>
+      </div>
+      <div class="js">
+        atc('frameByFrameExample').frameByFrame([<input id="frames" type="text" placeholder="type in a series of frames, separated by commas">], 10)
+        <input id="frameButton" type="button" value=".go()">
+      </div>
+      <script>
+        var frames = document.getElementById("frames");
+        atc("frameButton").on("click", function () {
+          atc("frameByFrameExample").frameRate(1000/8).frameByFrame(frames.value.split(","), 10).loop().go();
+        });
+      </script>
     </div>
-    <div>
-      <h2>custom</h2>
-      <div>My favorite color is <span id="color"></span>.</div>
-    </div>
+
   </div>
-  <script src="animate-text-content.js"></script>
-  <script>
-      
-    atc.loop();
-    
-    var fruitExample = function () {
-      var fruit = atc("fruit"),
-          fruits = ["apples", 
-                    "bananas", 
-                    "oranges", 
-                    "kiwis", 
-                    "tomatoes", 
-                    "lemons", 
-                    "limes", 
-                    "grapefruit", 
-                    "plums", 
-                    "peaches", 
-                    "star fruit", 
-                    "coconut", 
-                    "pears"];
-
-      for (var i = 0, len = fruits.length; i < len; i++) {
-        fruit
-            .erase()
-            .typeIn(fruits[i])
-            .stop();
-      }
-
-      atc("fruitButton").on("click", function () {
-        fruit.go();
-      });
-    };
-    
-    var blueberriesExample = function () {
-      var blueberries = atc("blueberries").loop(false).frameRate(1000/12);
-
-      atc("eatButton").on("click", function () {
-        var alreadyEaten = +blueberries.text(),
-            someBlueberries = Math.round(Math.random() * 20) + 3;
-            
-        blueberries
-            .clearTimeline()
-            .rollNumbers(alreadyEaten, alreadyEaten + someBlueberries)
-            .go();
-          
-      });
-    };
-    
-    var smileExample = function () {
-      var smile = atc("smile"),
-          smiles = ["smile.smile. :)", 
-                    "mile.smile.s :]", 
-                    "ile.smile.sm :}", 
-                    "le.smile.smi :D", 
-                    "e.smile.smil :|", 
-                    ".smile.smile :P"];
-      
-      smile.frameByFrame(smiles, 1, 2000).go();
-    };
-    
-    var colorExample = function () {
-      var color = atc("color"),
-          colors = ["red", 
-                    "green", 
-                    "yellow", 
-                    "blue", 
-                    "grey", 
-                    "black"];
-
-      color.element.style.fontWeight = "bold";
-      
-      for (var i = 0, len = colors.length; i < len; i++) {
-        var j = 0;// j is necessary for the custom function 
-                  // due to the fact that the function gets called after the for loop has already completed,
-                  // at which time i = len
-        color.text(colors[i]).custom(function () {
-          color.element.style.color = colors[j]; 
-          if (j < len - 1) { j++; } else { j = 0; }
-        }, 1000);
-      }
-      
-      color.go();
-    };
-    
-    fruitExample();
-    blueberriesExample();
-    smileExample();
-    colorExample();
-    
-  </script>
+  
 </body>
