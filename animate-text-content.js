@@ -49,13 +49,17 @@
       return this;
     };
     
-    Timeline.prototype.stop = function () {
-      var thiz = this,
-      funktion = function () {
-        thiz.stopped = true;
-      };
+    Timeline.prototype.stop = function (now) {
+      if (now) {
+        this.stopped = true;
+      } else {
+        var thiz = this,
+        funktion = function () {
+          thiz.stopped = true;
+        };
     
-      this.addToQueue(funktion, 0, this.findText());
+        this.addToQueue(funktion, 0, this.findText());
+      }
     
       return this;
     };
@@ -166,7 +170,7 @@
       frameRate = duration / totalFrames;
       
       funktion = function () {
-        if (i < totalFrames) {
+        if (i < totalFrames && !thiz.stopped) {
           thiz.element.textContent = frames[i % len];
           
           setTimeout(funktion, frameRate);
@@ -204,7 +208,7 @@
       duration = duration || this.defaults.frameRate * totalFrames;
     
       funktion = function () {
-        if (i < totalFrames) {
+        if (i < totalFrames && !thiz.stopped) {
           newValue += addFrame;
           thiz.element.textContent = newValue;
           
@@ -234,7 +238,7 @@
       duration = duration || this.defaults.frameRate * len;
     
       funktion = function () {
-        if (i < len) {
+        if (i < len && !thiz.stopped) {
           textArray.pop();
           thiz.element.textContent = textArray.join('');
           
@@ -263,7 +267,7 @@
       duration = duration || this.defaults.frameRate * len;
       
       funktion = function () {
-        if (i < len) {
+        if (i < len && !thiz.stopped) {
           displayTextArray.push(textArray.shift());
           thiz.element.textContent = displayTextArray.join('');
           
