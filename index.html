@@ -29,9 +29,14 @@
         <input id="typeInButton" type="button" value=".go()">
       </div>
       <script>
-        var typeInput = document.getElementById("typeInput");
+        var typeInput = document.getElementById("typeInput"),
+            typeExample = atc("typeInExample");
         atc("typeInButton").on("click", function () {
-          atc("typeInExample").typeIn(typeInput.value).go();
+          typeExample.stop("now");
+          
+          typeExample = atc("typeInExample")
+            .typeIn(typeInput.value)
+            .go();
         });
       </script>
     </div>
@@ -47,9 +52,14 @@
       </div>
       <script>
         var rollInput1 = document.getElementById("rollInput1"),
-            rollInput2 = document.getElementById("rollInput2");
+            rollInput2 = document.getElementById("rollInput2"),
+            rollExample = atc("rollNumExample");
         atc("rollButton").on("click", function () {
-          atc("rollNumExample").rollNumbers(parseInt(rollInput1.value), parseInt(rollInput2.value)).go();
+          rollExample.stop("now");
+          
+          rollExample = atc("rollNumExample")
+            .rollNumbers(parseInt(rollInput1.value), parseInt(rollInput2.value))
+            .go();
         });
       </script>
     </div>
@@ -60,13 +70,21 @@
         <span class="html">&lt;span id='frameByFrameExample'&gt;</span><span id="frameByFrameExample"></span><span class="html">&lt;/span&gt;</span>
       </div>
       <div class="js">
-        atc('frameByFrameExample').frameByFrame([<input id="frames" type="text" placeholder="type in a series of frames, separated by commas">], 10)
+        atc('frameByFrameExample').frameByFrame([<input id="frames" type="text" placeholder="type in a series of frames, separated by commas">]).loop()
         <input id="frameButton" type="button" value=".go()">
       </div>
       <script>
-        var frames = document.getElementById("frames");
+        var frames = document.getElementById("frames"),
+            frameExample = atc("frameByFrameExample");
+            
         atc("frameButton").on("click", function () {
-          atc("frameByFrameExample").frameRate(1000/8).frameByFrame(frames.value.split(","), 10).go();
+          frameExample.stop("now");
+          
+          frameExample = atc("frameByFrameExample")
+            .frameRate(1000/8)
+            .loop()
+            .frameByFrame(frames.value.split(","))
+            .go();
         });
       </script>
     </div>
