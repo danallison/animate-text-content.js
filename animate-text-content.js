@@ -33,7 +33,7 @@
         nextAnimation = function () {
           if (thiz.queueIndex < len && !thiz.stopped) {
             thiz.queue[thiz.queueIndex].funktion();
-            setTimeout(nextAnimation, thiz.queue[thiz.queueIndex].duration);
+            thiz.timeout = setTimeout(nextAnimation, thiz.queue[thiz.queueIndex].duration);
             thiz.queueIndex += 1;
           } else if (!thiz.stopped) {
             thiz.queueIndex = 0;
@@ -52,6 +52,7 @@
     Timeline.prototype.stop = function (now) {
       if (now) {
         this.stopped = true;
+        clearTimeout(this.timeout);
       } else {
         var thiz = this,
         funktion = function () {
@@ -173,7 +174,7 @@
         if (i < totalFrames && !thiz.stopped) {
           thiz.element.textContent = frames[i % len];
           
-          setTimeout(funktion, frameRate);
+          thiz.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           i = 0;
@@ -212,7 +213,7 @@
           newValue += addFrame;
           thiz.element.textContent = newValue;
           
-          setTimeout(funktion, frameRate);
+          thiz.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           thiz.element.textContent = endValue;
@@ -242,7 +243,7 @@
           textArray.pop();
           thiz.element.textContent = textArray.join('');
           
-          setTimeout(funktion, frameRate);
+          thiz.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           textArray = originalText.split('');
@@ -271,7 +272,7 @@
           displayTextArray.push(textArray.shift());
           thiz.element.textContent = displayTextArray.join('');
           
-          setTimeout(funktion, frameRate);
+          thiz.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           textArray = displayTextArray;
