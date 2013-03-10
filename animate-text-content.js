@@ -2,17 +2,39 @@
   atc = function (elementID) {
     var Timeline = function (elementID) {
       this.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID || {};
-      this.queue = [];
-      this.queueIndex = 0;
-      this.stopped = false;
-      this.duration = 0;
-      this.endText = "";
+      
       this.defaults = {
         frameRate: atc.defaults.frameRate,
         pauseDuration: atc.defaults.pauseDuration,
         loop: atc.defaults.loop
       };
     };
+    
+    var private = {};
+    
+    private.addToQueue = function (funktion, duration, endText) {
+      private.duration += duration;
+      private.endText = endText;
+      private.queue.push({ funktion: funktion, duration: duration, endText: endText });
+    };
+    
+    private.findText = function () {
+      var text;
+    
+      try {
+        text = private.queue[private.queue.length - 1].endText;
+      } catch (e) {
+        text = this.element.textContent;
+      }
+    
+      return text;
+    };
+    
+    private.queue = [];
+    private.queueIndex = 0;
+    private.stopped = false;
+    private.duration = 0;
+    private.endText = "";
   
     Timeline.prototype.go = function (timelineObj) {
       var thiz = this, 
@@ -25,18 +47,18 @@
           timelineObj.go();
         };
       
-        this.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
+        private.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
       } else {
-        len = this.queue.length;
-        this.stopped = false;
+        len = private.queue.length;
+        private.stopped = false;
         
         nextAnimation = function () {
-          if (thiz.queueIndex < len && !thiz.stopped) {
-            thiz.queue[thiz.queueIndex].funktion();
-            thiz.timeout = setTimeout(nextAnimation, thiz.queue[thiz.queueIndex].duration);
-            thiz.queueIndex += 1;
-          } else if (!thiz.stopped) {
-            thiz.queueIndex = 0;
+          if (private.queueIndex < len && !private.stopped) {
+            private.queue[private.queueIndex].funktion();
+            private.timeout = setTimeout(nextAnimation, private.queue[private.queueIndex].duration);
+            private.queueIndex += 1;
+          } else if (!private.stopped) {
+            private.queueIndex = 0;
             if (thiz.defaults.loop) {
               nextAnimation();
             }
@@ -51,15 +73,15 @@
     
     Timeline.prototype.stop = function (now) {
       if (now) {
-        this.stopped = true;
-        clearTimeout(this.timeout);
+        private.stopped = true;
+        clearTimeout(private.timeout);
       } else {
         var thiz = this,
         funktion = function () {
-          thiz.stopped = true;
+          private.stopped = true;
         };
     
-        this.addToQueue(funktion, 0, this.findText());
+        private.addToQueue(funktion, 0, private.findText.apply(this));
       }
     
       return this;
@@ -83,24 +105,6 @@
       return this;
     };
     
-    Timeline.prototype.findText = function () {
-      var text;
-    
-      try {
-        text = this.queue[this.queue.length - 1].endText;
-      } catch (e) {
-        text = this.element.textContent;
-      }
-    
-      return text;
-    };
-  
-    Timeline.prototype.addToQueue = function (funktion, duration, endText) {
-      this.duration += duration;
-      this.endText = endText;
-      this.queue.push({ funktion: funktion, duration: duration, endText: endText });
-    };
-    
     Timeline.prototype.on = function (eventType, funktion, useCapture) {
       useCapture = useCapture || false;
       this.element.addEventListener(eventType, funktion, useCapture);
@@ -117,7 +121,7 @@
           thiz.element.textContent = text;
         };
     
-        this.addToQueue(funktion, 0, text);
+        private.addToQueue(funktion, 0, text);
     
         return this;
       } else {
@@ -131,7 +135,7 @@
         thiz.element.innerHTML = html;
       };
     
-      this.addToQueue(funktion, 0, html);
+      private.addToQueue(funktion, 0, html);
     
       return this;
     };
@@ -142,16 +146,16 @@
         thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
       };
     
-      this.addToQueue(funktion, 0, this.element.textContent); // TODO fix endText value
+      private.addToQueue(funktion, 0, this.element.textContent); // TODO fix endText value
     
       return this;
     };
   
     Timeline.prototype.custom = function (funktion, duration, endText) {
       duration = duration || 0;
-      endText = endText || this.findText();
+      endText = endText || private.findText.apply(this);
     
-      this.addToQueue(funktion, duration, endText);
+      private.addToQueue(funktion, duration, endText);
     
       return this;
     };
@@ -171,17 +175,17 @@
       frameRate = duration / totalFrames;
       
       funktion = function () {
-        if (i < totalFrames && !thiz.stopped) {
+        if (i < totalFrames && !private.stopped) {
           thiz.element.textContent = frames[i % len];
           
-          thiz.timeout = setTimeout(funktion, frameRate);
+          private.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           i = 0;
         }
       };
       
-      this.addToQueue(funktion, duration, lastFrame);
+      private.addToQueue(funktion, duration, lastFrame);
       
       return this;
     };
@@ -209,11 +213,11 @@
       duration = duration || this.defaults.frameRate * totalFrames;
     
       funktion = function () {
-        if (i < totalFrames && !thiz.stopped) {
+        if (i < totalFrames && !private.stopped) {
           newValue += addFrame;
           thiz.element.textContent = newValue;
           
-          thiz.timeout = setTimeout(funktion, frameRate);
+          private.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           thiz.element.textContent = endValue;
@@ -222,14 +226,14 @@
         }
       };
     
-      this.addToQueue(funktion, duration, endValue);
+      private.addToQueue(funktion, duration, endValue);
     
       return this;
     };
   
     Timeline.prototype.erase = function (duration) {
       var thiz = this,
-          originalText = this.findText(),
+          originalText = private.findText.apply(this),
           textArray = originalText.split(''),
           len = originalText.length,
           frameRate = duration / len || this.defaults.frameRate,
@@ -239,11 +243,11 @@
       duration = duration || this.defaults.frameRate * len;
     
       funktion = function () {
-        if (i < len && !thiz.stopped) {
+        if (i < len && !private.stopped) {
           textArray.pop();
           thiz.element.textContent = textArray.join('');
           
-          thiz.timeout = setTimeout(funktion, frameRate);
+          private.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           textArray = originalText.split('');
@@ -251,7 +255,7 @@
         }
       };
     
-      this.addToQueue(funktion, duration, "");
+      private.addToQueue(funktion, duration, "");
     
       return this;
     };
@@ -268,11 +272,11 @@
       duration = duration || this.defaults.frameRate * len;
       
       funktion = function () {
-        if (i < len && !thiz.stopped) {
+        if (i < len && !private.stopped) {
           displayTextArray.push(textArray.shift());
           thiz.element.textContent = displayTextArray.join('');
           
-          thiz.timeout = setTimeout(funktion, frameRate);
+          private.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           textArray = displayTextArray;
@@ -281,25 +285,25 @@
         }
       };
     
-      this.addToQueue(funktion, duration, text);
+      private.addToQueue(funktion, duration, text);
     
       return this;
     };
   
     Timeline.prototype.pause = function (duration) {
-      var endText = this.findText(),
+      var endText = private.findText.apply(this),
           funktion = function () {};
         
       duration = duration || this.defaults.pauseDuration;
-      this.addToQueue(funktion, duration, endText);
+      private.addToQueue(funktion, duration, endText);
     
       return this;
     };
   
     Timeline.prototype.clearTimeline = function () {
-      this.queue = [];
-      this.duration = 0;
-      this.endText = "";
+      private.queue = [];
+      private.duration = 0;
+      private.endText = "";
     
       return this;
     };
