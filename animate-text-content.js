@@ -10,32 +10,30 @@
       };
     },
     
-    privut = {};
+    privut = {
+      queue: [],
+      queueIndex: 0,
+      stopped: false,
+      duration: 0,
+      endText: "",
+      addToQueue: function (funktion, duration, endText) {
+        privut.duration += duration;
+        privut.endText = endText;
+        privut.queue.push({ funktion: funktion, duration: duration, endText: endText });
+      },
+      findText: function () {
+        var text;
     
-    privut.addToQueue = function (funktion, duration, endText) {
-      privut.duration += duration;
-      privut.endText = endText;
-      privut.queue.push({ funktion: funktion, duration: duration, endText: endText });
-    };
+        try {
+          text = privut.queue[privut.queue.length - 1].endText;
+        } catch (e) {
+          text = this.element.textContent;
+        }
     
-    privut.findText = function () {
-      var text;
-    
-      try {
-        text = privut.queue[privut.queue.length - 1].endText;
-      } catch (e) {
-        text = this.element.textContent;
+        return text;
       }
-    
-      return text;
     };
     
-    privut.queue = [];
-    privut.queueIndex = 0;
-    privut.stopped = false;
-    privut.duration = 0;
-    privut.endText = "";
-  
     Timeline.prototype.go = function (timelineObj) {
       var thiz = this, 
           funktion,
