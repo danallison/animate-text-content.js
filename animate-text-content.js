@@ -8,21 +8,21 @@
         pauseDuration: atc.defaults.pauseDuration,
         loop: atc.defaults.loop
       };
+    },
+    
+    privut = {};
+    
+    privut.addToQueue = function (funktion, duration, endText) {
+      privut.duration += duration;
+      privut.endText = endText;
+      privut.queue.push({ funktion: funktion, duration: duration, endText: endText });
     };
     
-    var private = {};
-    
-    private.addToQueue = function (funktion, duration, endText) {
-      private.duration += duration;
-      private.endText = endText;
-      private.queue.push({ funktion: funktion, duration: duration, endText: endText });
-    };
-    
-    private.findText = function () {
+    privut.findText = function () {
       var text;
     
       try {
-        text = private.queue[private.queue.length - 1].endText;
+        text = privut.queue[privut.queue.length - 1].endText;
       } catch (e) {
         text = this.element.textContent;
       }
@@ -30,11 +30,11 @@
       return text;
     };
     
-    private.queue = [];
-    private.queueIndex = 0;
-    private.stopped = false;
-    private.duration = 0;
-    private.endText = "";
+    privut.queue = [];
+    privut.queueIndex = 0;
+    privut.stopped = false;
+    privut.duration = 0;
+    privut.endText = "";
   
     Timeline.prototype.go = function (timelineObj) {
       var thiz = this, 
@@ -47,18 +47,18 @@
           timelineObj.go();
         };
       
-        private.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
+        privut.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
       } else {
-        len = private.queue.length;
-        private.stopped = false;
+        len = privut.queue.length;
+        privut.stopped = false;
         
         nextAnimation = function () {
-          if (private.queueIndex < len && !private.stopped) {
-            private.queue[private.queueIndex].funktion();
-            private.timeout = setTimeout(nextAnimation, private.queue[private.queueIndex].duration);
-            private.queueIndex += 1;
-          } else if (!private.stopped) {
-            private.queueIndex = 0;
+          if (privut.queueIndex < len && !privut.stopped) {
+            privut.queue[privut.queueIndex].funktion();
+            privut.timeout = setTimeout(nextAnimation, privut.queue[privut.queueIndex].duration);
+            privut.queueIndex += 1;
+          } else if (!privut.stopped) {
+            privut.queueIndex = 0;
             if (thiz.defaults.loop) {
               nextAnimation();
             }
@@ -73,15 +73,14 @@
     
     Timeline.prototype.stop = function (now) {
       if (now) {
-        private.stopped = true;
-        clearTimeout(private.timeout);
+        privut.stopped = true;
+        clearTimeout(privut.timeout);
       } else {
-        var thiz = this,
-        funktion = function () {
-          private.stopped = true;
+        var funktion = function () {
+          privut.stopped = true;
         };
     
-        private.addToQueue(funktion, 0, private.findText.apply(this));
+        privut.addToQueue(funktion, 0, privut.findText.apply(this));
       }
     
       return this;
@@ -121,7 +120,7 @@
           thiz.element.textContent = text;
         };
     
-        private.addToQueue(funktion, 0, text);
+        privut.addToQueue(funktion, 0, text);
     
         return this;
       } else {
@@ -135,7 +134,7 @@
         thiz.element.innerHTML = html;
       };
     
-      private.addToQueue(funktion, 0, html);
+      privut.addToQueue(funktion, 0, html);
     
       return this;
     };
@@ -146,16 +145,16 @@
         thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
       };
     
-      private.addToQueue(funktion, 0, this.element.textContent); // TODO fix endText value
+      privut.addToQueue(funktion, 0, this.element.textContent); // TODO fix endText value
     
       return this;
     };
   
     Timeline.prototype.custom = function (funktion, duration, endText) {
       duration = duration || 0;
-      endText = endText || private.findText.apply(this);
+      endText = endText || privut.findText.apply(this);
     
-      private.addToQueue(funktion, duration, endText);
+      privut.addToQueue(funktion, duration, endText);
     
       return this;
     };
@@ -175,17 +174,17 @@
       frameRate = duration / totalFrames;
       
       funktion = function () {
-        if (i < totalFrames && !private.stopped) {
+        if (i < totalFrames && !privut.stopped) {
           thiz.element.textContent = frames[i % len];
           
-          private.timeout = setTimeout(funktion, frameRate);
+          privut.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           i = 0;
         }
       };
       
-      private.addToQueue(funktion, duration, lastFrame);
+      privut.addToQueue(funktion, duration, lastFrame);
       
       return this;
     };
@@ -213,11 +212,11 @@
       duration = duration || this.defaults.frameRate * totalFrames;
     
       funktion = function () {
-        if (i < totalFrames && !private.stopped) {
+        if (i < totalFrames && !privut.stopped) {
           newValue += addFrame;
           thiz.element.textContent = newValue;
           
-          private.timeout = setTimeout(funktion, frameRate);
+          privut.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           thiz.element.textContent = endValue;
@@ -226,14 +225,14 @@
         }
       };
     
-      private.addToQueue(funktion, duration, endValue);
+      privut.addToQueue(funktion, duration, endValue);
     
       return this;
     };
   
     Timeline.prototype.erase = function (duration) {
       var thiz = this,
-          originalText = private.findText.apply(this),
+          originalText = privut.findText.apply(this),
           textArray = originalText.split(''),
           len = originalText.length,
           frameRate = duration / len || this.defaults.frameRate,
@@ -243,11 +242,11 @@
       duration = duration || this.defaults.frameRate * len;
     
       funktion = function () {
-        if (i < len && !private.stopped) {
+        if (i < len && !privut.stopped) {
           textArray.pop();
           thiz.element.textContent = textArray.join('');
           
-          private.timeout = setTimeout(funktion, frameRate);
+          privut.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           textArray = originalText.split('');
@@ -255,7 +254,7 @@
         }
       };
     
-      private.addToQueue(funktion, duration, "");
+      privut.addToQueue(funktion, duration, "");
     
       return this;
     };
@@ -272,11 +271,11 @@
       duration = duration || this.defaults.frameRate * len;
       
       funktion = function () {
-        if (i < len && !private.stopped) {
+        if (i < len && !privut.stopped) {
           displayTextArray.push(textArray.shift());
           thiz.element.textContent = displayTextArray.join('');
           
-          private.timeout = setTimeout(funktion, frameRate);
+          privut.timeout = setTimeout(funktion, frameRate);
           i++;
         } else {
           textArray = displayTextArray;
@@ -285,25 +284,25 @@
         }
       };
     
-      private.addToQueue(funktion, duration, text);
+      privut.addToQueue(funktion, duration, text);
     
       return this;
     };
   
     Timeline.prototype.pause = function (duration) {
-      var endText = private.findText.apply(this),
+      var endText = privut.findText.apply(this),
           funktion = function () {};
         
       duration = duration || this.defaults.pauseDuration;
-      private.addToQueue(funktion, duration, endText);
+      privut.addToQueue(funktion, duration, endText);
     
       return this;
     };
   
     Timeline.prototype.clearTimeline = function () {
-      private.queue = [];
-      private.duration = 0;
-      private.endText = "";
+      privut.queue = [];
+      privut.duration = 0;
+      privut.endText = "";
     
       return this;
     };
