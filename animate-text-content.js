@@ -18,50 +18,51 @@
       endText: ""
     };
   },
-  
-  helpers = {
-    addToQueue: function (methodName, funktion, duration, endText) {
-      this._.duration += duration;
-      this._.endText = endText;
-      this._.queue.push({ methodName: methodName, funktion: funktion, duration: duration, endText: endText });
-    },
-    findText: function () {
-      var text;
-  
-      try {
-        text = this._.queue[this._.queue.length - 1].endText;
-      } catch (e) {
-        text = this.element.textContent;
-      }
-  
-      return text;
-    },
-    nextFrame: function (frameRate) {
-      var now = new Date().getTime(),
-          expected = helpers.expected || now,
-          difference = now - expected;
+  addToQueue = function (thiz, methodName, funktion, duration, endText) {
+    thiz._.duration += duration;
+    thiz._.endText = endText;
+    thiz._.queue.push({ methodName: methodName, funktion: funktion, duration: duration, endText: endText });
+  },
+  findText = function (thiz) {
+    var text,
+        len = thiz._.queue.length;
 
-      helpers.expected = expected + frameRate;
-      return Math.max(0, frameRate - difference);
-    },
-    nextAnimation: function () {
-      var thiz = this;
-      delete helpers.expected;
-      
-      if (thiz._.queueIndex < thiz._.queue.length && !thiz._.stopped) {
+    if (len) {
+      text = thiz._.queue[len - 1].endText;
+    } else {
+      text = thiz.element.textContent;
+    }
+
+    return text;
+  },
+  nextFrame = function (frameRate) {
+    var now, difference;
+    
+    now = new Date().getTime();
+    expected = expected || now;
+    difference = now - expected;
+
+    expected += frameRate;
+    return Math.max(0, frameRate - difference);
+  },
+  nextAnimation = function (thiz) {
+    expected = null;
+    
+    if (thiz._.queueIndex < thiz._.queue.length && !thiz._.stopped) {
+      thiz._.queueIndex += 1;
+      thiz._.queue[thiz._.queueIndex - 1].funktion();
+    } else if (!thiz._.stopped) {
+      thiz._.queueIndex = 0;
+      if (thiz.defaults.loop) {
         thiz._.queueIndex += 1;
         thiz._.queue[thiz._.queueIndex - 1].funktion();
-      } else if (!thiz._.stopped) {
-        thiz._.queueIndex = 0;
-        if (thiz.defaults.loop) {
-          thiz._.queueIndex += 1;
-          thiz._.queue[thiz._.queueIndex - 1].funktion();
-        } else {
-          thiz._.stopped = true;
-        }
+      } else {
+        thiz._.stopped = true;
       }
     }
-  };
+  },
+  expected,
+  timeout;
   
   Timeline.prototype.go = function (timelineObj) {
     var thiz = this,
@@ -71,13 +72,13 @@
     if (timelineObj) {
       funktion = function () {
         timelineObj.go();
-        helpers.timeout = setTimeout(function () { helpers.nextAnimation.call(thiz); }, timelineObj._.duration);
+        timeout = setTimeout(function () { nextAnimation(thiz); }, timelineObj._.duration);
       };
     
-      helpers.addToQueue.call(thiz, "go", funktion, timelineObj.duration, timelineObj.endText);
+      addToQueue(thiz, "go", funktion, timelineObj.duration, timelineObj.endText);
     } else if (len > 0) {
       thiz._.stopped = false;
-      helpers.nextAnimation.call(thiz);
+      nextAnimation(thiz);
     }
   
     return thiz;
@@ -87,14 +88,14 @@
     var thiz = this;
     if (now) {
       thiz._.stopped = true;
-      clearTimeout(helpers.timeout);
-      delete helpers.expected;
+      clearTimeout(timeout);
+      expected = null;
     } else {
       var funktion = function () {
             thiz._.stopped = true;
           };
   
-      helpers.addToQueue.call(thiz, "stop", funktion, 0, helpers.findText.call(thiz));
+      addToQueue(thiz, "stop", funktion, 0, findText(thiz));
     }
   
     return thiz;
@@ -132,10 +133,10 @@
   
       funktion = function () {
         thiz.element.textContent = text;
-        helpers.nextAnimation.call(thiz);
+        nextAnimation(thiz);
       };
   
-      helpers.addToQueue.call(thiz, "text", funktion, 0, text);
+      addToQueue(thiz, "text", funktion, 0, text);
   
       return thiz;
     } else {
@@ -147,10 +148,10 @@
     var thiz = this,
     funktion = function () {
       thiz.element.innerHTML = html;
-      helpers.nextAnimation.call(thiz);
+      nextAnimation(thiz);
     };
   
-    helpers.addToQueue.call(thiz, "html", funktion, 0, html);
+    addToQueue(thiz, "html", funktion, 0, html);
   
     return thiz;
   };
@@ -159,10 +160,10 @@
     var thiz = this,
     funktion = function () {
       thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
-      helpers.nextAnimation.call(thiz);
+      nextAnimation(thiz);
     };
   
-    helpers.addToQueue.call(thiz, "switchElement", funktion, 0, thiz.element.textContent); // TODO fix endText value
+    addToQueue(thiz, "switchElement", funktion, 0, thiz.element.textContent); // TODO fix endText value
   
     return thiz;
   };
@@ -172,13 +173,13 @@
     
     var thiz = this,
         duration = options.duration || 0,
-        endText = options.endText || helpers.findText.call(thiz),
+        endText = options.endText || findText(thiz),
         funktion = function () {
           customFunktion();
-          helpers.timeout = setTimeout(function () { helpers.nextAnimation.call(thiz); }, duration);
+          timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
         };
   
-    helpers.addToQueue.call(thiz, "custom", funktion, duration, endText);
+    addToQueue(thiz, "custom", funktion, duration, endText);
   
     return thiz;
   };
@@ -198,15 +199,15 @@
           if (i < totalFrames && !thiz._.stopped) {
             thiz.element.textContent = frames[i % len];
         
-            helpers.timeout = setTimeout(funktion, helpers.nextFrame(frameRate));
+            timeout = setTimeout(funktion, nextFrame(frameRate));
             i++;
           } else {
             i = 0;
-            helpers.nextAnimation.call(thiz);
+            nextAnimation(thiz);
           }
         };
     
-    helpers.addToQueue.call(thiz, "frameByFrame", funktion, duration, lastFrame);
+    addToQueue(thiz, "frameByFrame", funktion, duration, lastFrame);
     
     return thiz;
   };
@@ -239,24 +240,24 @@
         newValue += addFrame;
         thiz.element.textContent = newValue;
         
-        helpers.timeout = setTimeout(funktion, helpers.nextFrame(frameRate));
+        timeout = setTimeout(funktion, nextFrame(frameRate));
         i++;
       } else {
         thiz.element.textContent = endValue;
         newValue = startValue;
         i = 0;
-        helpers.nextAnimation.call(thiz);
+        nextAnimation(thiz);
       }
     };
   
-    helpers.addToQueue.call(thiz, "rollNumbers", funktion, duration, endValue);
+    addToQueue(thiz, "rollNumbers", funktion, duration, endValue);
   
     return thiz;
   };
 
   Timeline.prototype.erase = function (duration) {
     var thiz = this,
-        originalText = helpers.findText.call(thiz),
+        originalText = findText(thiz),
         textArray = originalText.split(''),
         len = originalText.length,
         frameRate = duration / len || thiz.defaults.frameRate,
@@ -270,16 +271,16 @@
         textArray.pop();
         thiz.element.textContent = textArray.join('');
         
-        helpers.timeout = setTimeout(funktion, helpers.nextFrame(frameRate));
+        timeout = setTimeout(funktion, nextFrame(frameRate));
         i++;
       } else {
         textArray = originalText.split('');
         i = 0;
-        helpers.nextAnimation.call(thiz);
+        nextAnimation(thiz);
       }
     };
   
-    helpers.addToQueue.call(thiz, "erase", funktion, duration, "");
+    addToQueue(thiz, "erase", funktion, duration, "");
   
     return thiz;
   };
@@ -300,18 +301,18 @@
       if (i < len && !thiz._.stopped) {
         displayTextArray.push(textArray.shift());
         thiz.element.textContent = displayTextArray.join('');
-        helpers.timeout = setTimeout(funktion, helpers.nextFrame(frameRate));
+        timeout = setTimeout(funktion, nextFrame(frameRate));
         i++;
       } else {
         textArray = displayTextArray;
         displayTextArray = [];
         i = 0;
         
-        helpers.nextAnimation.call(thiz);
+        nextAnimation(thiz);
       }
     };
   
-    helpers.addToQueue.call(thiz, "typeIn", funktion, duration, text);
+    addToQueue(thiz, "typeIn", funktion, duration, text);
   
     return thiz;
   };
@@ -320,12 +321,12 @@
     duration = duration || this.defaults.pauseDuration;
     
     var thiz = this,
-        endText = helpers.findText.call(thiz),
+        endText = findText(thiz),
         funktion = function () {
-          helpers.timeout = setTimeout(function () { helpers.nextAnimation.call(thiz); }, duration);
+          timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
         };
       
-    helpers.addToQueue.call(thiz, "pause", funktion, duration, endText);
+    addToQueue(thiz, "pause", funktion, duration, endText);
   
     return thiz;
   };
