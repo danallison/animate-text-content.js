@@ -127,10 +127,10 @@
   };
   
   Timeline.prototype.text = function (text) {
+    var thiz = this,
+        funktion;
+        
     if (text) {
-      var thiz = this,
-          funktion;
-  
       funktion = function () {
         thiz.element.textContent = text;
         nextAnimation(thiz);
@@ -139,9 +139,8 @@
       addToQueue(thiz, "text", funktion, 0, text);
   
       return thiz;
-    } else {
-      return thiz.element.textContent;
     }
+    return thiz.element.textContent;
   };
   
   Timeline.prototype.html = function (html) {
@@ -366,4 +365,4 @@
     
     return atc;
   };
-}());
+})();
