@@ -69,14 +69,13 @@ div {
     };
     
     var blueberriesExample = function () {
-      var blueberries = atc("blueberries").loop(false).frameRate(1000/12);
-
       atc("eatButton").on("click", function () {
-        var alreadyEaten = +blueberries.text(),
+        var blueberries = atc("blueberries").loop(false).frameRate(1000/12),
+            alreadyEaten = +blueberries.text(),
             someBlueberries = Math.round(Math.random() * 20) + 3;
             
         blueberries
-            .clearTimeline()
+            //.clearTimeline()
             .rollNumbers(alreadyEaten, alreadyEaten + someBlueberries)
             .go();
           
@@ -84,7 +83,7 @@ div {
     };
     
     var smileExample = function () {
-      var smile = atc("smile"),
+      var smile = atc("smile").frameRate(1000/12),
           smiles = ["smile.smile. :)", 
                     "mile.smile.s :]", 
                     "ile.smile.sm :}", 
@@ -107,13 +106,14 @@ div {
       color.element.style.fontWeight = "bold";
       
       for (var i = 0, len = colors.length; i < len; i++) {
-        var j = 0;// j is necessary for the custom function 
-                  // due to the fact that the function gets called after the for loop has already completed,
-                  // at which time i = len
-        color.text(colors[i]).custom(function () {
-          color.element.style.color = colors[j]; 
-          if (j < len - 1) { j++; } else { j = 0; }
-        }, 1000);
+        (function (i) {
+          color
+            .text(colors[i])
+            .custom(function () {
+              color.element.style.color = colors[i]; 
+            }, 1000)
+            .pause(400);
+        })(i);
       }
       
       color.go();
