@@ -317,6 +317,90 @@
     return thiz;
   };
   
+  Timeline.prototype.fadeIn = function (options) {
+    options = options || {};
+    
+    var thiz = this,
+        text = options.text || findText(thiz),
+        textArray = text.split(''),
+        textLen = textArray.length,
+        inOrOut = arguments[1] === "Out" ? "Out" : "In",
+        fadeIn = inOrOut === "In",
+        fadeOut = !fadeIn,
+        spans = [],
+        spansLen = 10,
+        len = textLen + spansLen,
+        duration = options.duration || thiz.defaults.frameRate * len,
+        frameRate = duration / len,
+        funktion,
+        i;
+        
+    for (i = 0; i < spansLen; i++) {
+      spans[i] = {
+        el: document.createElement('span'),
+        arr: []
+      };
+      if (fadeIn) {
+        spans[i].el.style.opacity = i / (spansLen - 1);
+      } else {
+        spans[i].el.style.opacity = 1 - i / (spansLen - 1);
+      }
+    }
+    
+    i = 0;
+    
+    funktion = function () {
+      var j, span;
+      
+      if (i === 0) {
+        thiz.element.style.opacity = 1;
+        thiz.element.textContent = "";
+        
+        for (j = spansLen - 1; j >= 0; j--) {
+          spans[j].el.textContent = "";
+          spans[j].arr = [];
+          thiz.element.appendChild(spans[j].el);
+        }
+        
+        spans[0].el.textContent = text;
+        spans[0].arr = textArray;
+      }
+      
+      if (i < len && !thiz._.stopped) {
+        for (j = spansLen - 1; j > 0; j--) {
+          spans[j].arr.push(spans[j - 1].arr.shift());
+        }
+        
+        for (j = 0; j < spansLen; j++) {
+          spans[j].el.textContent = spans[j].arr.join('');
+        }
+        
+        timeout = setTimeout(funktion, nextFrame(frameRate));
+        i++;
+      } else {
+        textArray = text.split('');
+        thiz.element.style.opacity = +fadeIn;
+        thiz.element.textContent = text;
+        i = 0;
+        if (fadeOut && options.remove) {
+          thiz.element.remove();
+        }
+        
+        nextAnimation(thiz);
+      }
+    };
+    
+    addToQueue(thiz, "fade" + inOrOut, funktion, duration, text);
+    
+    return thiz;
+  };
+  
+  Timeline.prototype.fadeOut = function (options) {
+    this.fadeIn(options, "Out");
+    
+    return this;
+  };
+  
   Timeline.prototype.pause = function (duration) {
     duration = duration || this.defaults.pauseDuration;
     
