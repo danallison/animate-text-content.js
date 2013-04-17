@@ -155,14 +155,14 @@
     return thiz;
   };
 
-  Timeline.prototype.switchElement = function (elementID) {
+  Timeline.prototype.switchElement = function (elementID, endText) {
     var thiz = this,
     funktion = function () {
       thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
       nextAnimation(thiz);
     };
   
-    addToQueue(thiz, "switchElement", funktion, 0, thiz.element.textContent); // TODO fix endText value
+    addToQueue(thiz, "switchElement", funktion, 0, endText || "");
   
     return thiz;
   };
