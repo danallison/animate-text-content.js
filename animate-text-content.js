@@ -150,7 +150,7 @@
       nextAnimation(thiz);
     };
   
-    addToQueue(thiz, "html", funktion, 0, html);
+    addToQueue(thiz, "html", funktion, 0, html.replace(/(<([^>]+)>)/ig,""));
   
     return thiz;
   };
