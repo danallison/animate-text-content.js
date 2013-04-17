@@ -254,17 +254,18 @@
     return thiz;
   };
 
-  Timeline.prototype.erase = function (duration) {
+  Timeline.prototype.erase = function (options) {
+    options = options || {};
+    
     var thiz = this,
-        originalText = findText(thiz),
-        textArray = originalText.split(''),
-        len = originalText.length,
-        frameRate = duration / len || thiz.defaults.frameRate,
+        text = findText(thiz),
+        textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
+        len = textArray.length,
+        duration = options.duration || thiz.defaults.frameRate * len,
+        frameRate = duration / len,
         funktion,
         i = 0;
-      
-    duration = duration || thiz.defaults.frameRate * len;
-  
+    
     funktion = function () {
       if (i < len && !thiz._.stopped) {
         textArray.pop();
@@ -273,7 +274,7 @@
         timeout = setTimeout(funktion, nextFrame(frameRate));
         i++;
       } else {
-        textArray = originalText.split('');
+        textArray = options.byWord ? text.match(/\S+\s*/g) : text.split('');
         i = 0;
         nextAnimation(thiz);
       }
@@ -288,11 +289,11 @@
     options = options || {};
     
     var thiz = this,
-        textArray = text.split(''),
+        textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
         displayTextArray = [],
-        len = text.length,
-        frameRate = options.duration / len || thiz.defaults.frameRate,
+        len = textArray.length,
         duration = options.duration || thiz.defaults.frameRate * len,
+        frameRate = duration / len,
         funktion,
         i = 0;
     
