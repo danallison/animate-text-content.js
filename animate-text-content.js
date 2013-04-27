@@ -64,7 +64,9 @@
   expected,
   timeout;
   
-  Timeline.prototype.go = function (timelineObj) {
+  Timeline.prototype.go = function (timelineObj, options) {
+    options = options || {};
+    
     var thiz = this,
         len = thiz._.queue.length,
         funktion;
@@ -72,7 +74,11 @@
     if (timelineObj) {
       funktion = function () {
         timelineObj.go();
-        timeout = setTimeout(function () { nextAnimation(thiz); }, timelineObj._.duration);
+        if (options.delay) {
+          timeout = setTimeout(function () { nextAnimation(thiz); }, timelineObj._.duration);
+        } else {
+          nextAnimation(thiz);
+        }
       };
     
       addToQueue(thiz, "go", funktion, timelineObj.duration, timelineObj.endText);
