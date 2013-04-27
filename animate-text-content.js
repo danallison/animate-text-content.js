@@ -424,6 +424,7 @@
 
     clearTimeline: function () {
       this._.queue = [];
+      this._.queueIndex = 0;
       this._.duration = 0;
       this._.endText = "";
 
