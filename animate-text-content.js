@@ -64,371 +64,374 @@
   expected,
   timeout;
   
-  Timeline.prototype.go = function (timelineObj, options) {
-    options = options || {};
-    
-    var thiz = this,
-        len = thiz._.queue.length,
-        funktion;
-  
-    if (timelineObj) {
-      funktion = function () {
-        timelineObj.go();
-        if (options.delay) {
-          timeout = setTimeout(function () { nextAnimation(thiz); }, timelineObj._.duration);
-        } else {
-          nextAnimation(thiz);
-        }
-      };
-    
-      addToQueue(thiz, "go", funktion, timelineObj.duration, timelineObj.endText);
-    } else if (len > 0) {
-      thiz._.stopped = false;
-      nextAnimation(thiz);
-    }
-  
-    return thiz;
-  };
-  
-  Timeline.prototype.stop = function (now) {
-    var thiz = this;
-    if (now) {
-      thiz._.stopped = true;
-      clearTimeout(timeout);
-      expected = null;
-    } else {
-      var funktion = function () {
-            thiz._.stopped = true;
-          };
-  
-      addToQueue(thiz, "stop", funktion, 0, findText(thiz));
-    }
-  
-    return thiz;
-  };
-  
-  Timeline.prototype.frameRate = function (frameRate) {
-    this.defaults.frameRate = frameRate || this.defaults.frameRate;
-    
-    return this;
-  };
-  
-  Timeline.prototype.pauseDuration = function (duration) {
-    this.defaults.pauseDuration = duration || this.defaults.pauseDuration;
-    
-    return this;
-  };
-  
-  Timeline.prototype.loop = function (bool) {
-    this.defaults.loop = typeof bool === "undefined" ? true : bool;
+  Timeline.prototype = {
+    go: function (timelineObj, options) {
+      options = options || {};
 
-    return this;
-  };
-  
-  Timeline.prototype.on = function (eventType, funktion, useCapture) {
-    useCapture = useCapture || false;
-    this.element.addEventListener(eventType, funktion, useCapture);
-    
-    return this;
-  };
-  
-  Timeline.prototype.text = function (text) {
-    var thiz = this,
-        funktion;
-        
-    if (text) {
-      funktion = function () {
-        thiz.element.textContent = text;
-        nextAnimation(thiz);
-      };
-  
-      addToQueue(thiz, "text", funktion, 0, text);
-  
-      return thiz;
-    }
-    return thiz.element.textContent;
-  };
-  
-  Timeline.prototype.html = function (html) {
-    var thiz = this,
-    funktion = function () {
-      thiz.element.innerHTML = html;
-      nextAnimation(thiz);
-    };
-  
-    addToQueue(thiz, "html", funktion, 0, html.replace(/(<([^>]+)>)/ig,""));
-  
-    return thiz;
-  };
+      var thiz = this,
+          len = thiz._.queue.length,
+          funktion;
 
-  Timeline.prototype.switchElement = function (elementID, endText) {
-    var thiz = this,
-    funktion = function () {
-      thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
-      nextAnimation(thiz);
-    };
-  
-    addToQueue(thiz, "switchElement", funktion, 0, endText || "");
-  
-    return thiz;
-  };
-
-  Timeline.prototype.custom = function (customFunktion, options) {
-    options = options || {};
-    
-    var thiz = this,
-        duration = options.duration || 0,
-        endText = options.endText || findText(thiz),
+      if (timelineObj) {
         funktion = function () {
-          customFunktion();
-          timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
-        };
-  
-    addToQueue(thiz, "custom", funktion, duration, endText);
-  
-    return thiz;
-  };
-  
-  Timeline.prototype.frameByFrame = function (frames, options) {
-    options = options || {};
-    
-    var thiz = this,
-        len = frames.length,
-        lastFrame = frames[len - 1],
-        loops = options.loops || 1,
-        totalFrames = len * loops,
-        duration = options.duration || totalFrames * thiz.defaults.frameRate,
-        frameRate = duration / totalFrames,
-        i = 0,
-        funktion = function () {
-          if (i < totalFrames && !thiz._.stopped) {
-            thiz.element.textContent = frames[i % len];
-        
-            timeout = setTimeout(funktion, nextFrame(frameRate));
-            i++;
+          timelineObj.go();
+          if (options.delay) {
+            timeout = setTimeout(function () { nextAnimation(thiz); }, timelineObj._.duration);
           } else {
-            i = 0;
             nextAnimation(thiz);
           }
         };
-    
-    addToQueue(thiz, "frameByFrame", funktion, duration, lastFrame);
-    
-    return thiz;
-  };
 
-  Timeline.prototype.rollNumbers = function (startValue, endValue, options) {
-    options = options || {};
-    
-    var thiz = this,
-        difference = endValue - startValue,
-        newValue = startValue,
-        increment = options.increment || 1,
-        addFrame = increment,
-        totalFrames,
-        frameRate,
-        duration,
-        funktion,
-        i = 0;
-  
-    if (difference < 0) {
-      difference = -difference;
-      addFrame = -addFrame;
-    }
-
-    totalFrames = difference / increment;
-    frameRate = options.duration / totalFrames || thiz.defaults.frameRate;
-    duration = options.duration || thiz.defaults.frameRate * totalFrames;
-  
-    funktion = function () {
-      if (i < totalFrames && !thiz._.stopped) {
-        newValue += addFrame;
-        thiz.element.textContent = newValue;
-        
-        timeout = setTimeout(funktion, nextFrame(frameRate));
-        i++;
-      } else {
-        thiz.element.textContent = endValue;
-        newValue = startValue;
-        i = 0;
+        addToQueue(thiz, "go", funktion, timelineObj.duration, timelineObj.endText);
+      } else if (len > 0) {
+        thiz._.stopped = false;
         nextAnimation(thiz);
       }
-    };
-  
-    addToQueue(thiz, "rollNumbers", funktion, duration, endValue);
-  
-    return thiz;
-  };
 
-  Timeline.prototype.erase = function (options) {
-    options = options || {};
-    
-    var thiz = this,
-        text = findText(thiz),
-        textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
-        len = textArray.length,
-        duration = options.duration || thiz.defaults.frameRate * len,
-        frameRate = duration / len,
-        funktion,
-        i = 0;
-    
-    funktion = function () {
-      if (i < len && !thiz._.stopped) {
-        textArray.pop();
-        thiz.element.textContent = textArray.join('');
-        
-        timeout = setTimeout(funktion, nextFrame(frameRate));
-        i++;
-      } else {
-        textArray = options.byWord ? text.match(/\S+\s*/g) : text.split('');
-        i = 0;
-        nextAnimation(thiz);
-      }
-    };
-  
-    addToQueue(thiz, "erase", funktion, duration, "");
-  
-    return thiz;
-  };
+      return thiz;
+    },
 
-  Timeline.prototype.typeIn = function (text, options) {
-    options = options || {};
-    
-    var thiz = this,
-        textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
-        displayTextArray = [],
-        len = textArray.length,
-        duration = options.duration || thiz.defaults.frameRate * len,
-        frameRate = duration / len,
-        funktion,
-        i = 0;
-    
-    funktion = function () {
-      if (i < len && !thiz._.stopped) {
-        displayTextArray.push(textArray.shift());
-        thiz.element.textContent = displayTextArray.join('');
-        timeout = setTimeout(funktion, nextFrame(frameRate));
-        i++;
+    stop: function (now) {
+      var thiz = this;
+      if (now) {
+        thiz._.stopped = true;
+        clearTimeout(timeout);
+        expected = null;
       } else {
-        textArray = displayTextArray;
-        displayTextArray = [];
-        i = 0;
-        
-        nextAnimation(thiz);
+        var funktion = function () {
+              thiz._.stopped = true;
+            };
+
+        addToQueue(thiz, "stop", funktion, 0, findText(thiz));
       }
-    };
-  
-    addToQueue(thiz, "typeIn", funktion, duration, text);
-  
-    return thiz;
-  };
-  
-  Timeline.prototype.fadeIn = function (options) {
-    options = options || {};
-    
-    var thiz = this,
-        text = options.text || findText(thiz),
-        textArray = text.split(''),
-        textLen = textArray.length,
-        inOrOut = arguments[1] === "Out" ? "Out" : "In",
-        fadeIn = inOrOut === "In",
-        fadeOut = !fadeIn,
-        spans = [],
-        spansLen = 10,
-        len = textLen + spansLen,
-        duration = options.duration || thiz.defaults.frameRate * len,
-        frameRate = duration / len,
-        funktion,
-        i;
-        
-    for (i = 0; i < spansLen; i++) {
-      spans[i] = {
-        el: document.createElement('span'),
-        arr: []
-      };
-      if (fadeIn) {
-        spans[i].el.style.opacity = i / (spansLen - 1);
-      } else {
-        spans[i].el.style.opacity = 1 - i / (spansLen - 1);
-      }
-    }
-    
-    i = 0;
-    
-    funktion = function () {
-      var j, span;
-      
-      if (i === 0) {
-        thiz.element.style.opacity = 1;
-        thiz.element.textContent = "";
-        
-        for (j = spansLen - 1; j >= 0; j--) {
-          spans[j].el.textContent = "";
-          spans[j].arr = [];
-          thiz.element.appendChild(spans[j].el);
-        }
-        
-        spans[0].el.textContent = text;
-        spans[0].arr = textArray;
-      }
-      
-      if (i < len && !thiz._.stopped) {
-        for (j = spansLen - 1; j > 0; j--) {
-          spans[j].arr.push(spans[j - 1].arr.shift());
-        }
-        
-        for (j = 0; j < spansLen; j++) {
-          spans[j].el.textContent = spans[j].arr.join('');
-        }
-        
-        timeout = setTimeout(funktion, nextFrame(frameRate));
-        i++;
-      } else {
-        textArray = text.split('');
-        thiz.element.style.opacity = +fadeIn;
-        thiz.element.textContent = text;
-        i = 0;
-        if (fadeOut && options.remove) {
-          thiz.element.remove();
-        }
-        
-        nextAnimation(thiz);
-      }
-    };
-    
-    addToQueue(thiz, "fade" + inOrOut, funktion, duration, text);
-    
-    return thiz;
-  };
-  
-  Timeline.prototype.fadeOut = function (options) {
-    this.fadeIn(options, "Out");
-    
-    return this;
-  };
-  
-  Timeline.prototype.pause = function (duration) {
-    duration = duration || this.defaults.pauseDuration;
-    
-    var thiz = this,
-        endText = findText(thiz),
+
+      return thiz;
+    },
+
+    frameRate: function (frameRate) {
+      this.defaults.frameRate = frameRate || this.defaults.frameRate;
+
+      return this;
+    },
+
+    pauseDuration: function (duration) {
+      this.defaults.pauseDuration = duration || this.defaults.pauseDuration;
+
+      return this;
+    },
+
+    loop: function (bool) {
+      this.defaults.loop = typeof bool === "undefined" ? true : bool;
+
+      return this;
+    },
+
+    on: function (eventType, funktion, useCapture) {
+      useCapture = useCapture || false;
+      this.element.addEventListener(eventType, funktion, useCapture);
+
+      return this;
+    },
+
+    text: function (text) {
+      var thiz = this,
+          funktion;
+
+      if (text) {
         funktion = function () {
-          timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
+          thiz.element.textContent = text;
+          nextAnimation(thiz);
         };
-      
-    addToQueue(thiz, "pause", funktion, duration, endText);
-  
-    return thiz;
+
+        addToQueue(thiz, "text", funktion, 0, text);
+
+        return thiz;
+      }
+      return thiz.element.textContent;
+    },
+
+    html: function (html) {
+      var thiz = this,
+      funktion = function () {
+        thiz.element.innerHTML = html;
+        nextAnimation(thiz);
+      };
+
+      addToQueue(thiz, "html", funktion, 0, html.replace(/(<([^>]+)>)/ig,""));
+
+      return thiz;
+    },
+
+    switchElement: function (elementID, endText) {
+      var thiz = this,
+      funktion = function () {
+        thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
+        nextAnimation(thiz);
+      };
+
+      addToQueue(thiz, "switchElement", funktion, 0, endText || "");
+
+      return thiz;
+    },
+
+    custom: function (customFunktion, options) {
+      options = options || {};
+
+      var thiz = this,
+          duration = options.duration || 0,
+          endText = options.endText || findText(thiz),
+          funktion = function () {
+            customFunktion();
+            timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
+          };
+
+      addToQueue(thiz, "custom", funktion, duration, endText);
+
+      return thiz;
+    },
+
+    frameByFrame: function (frames, options) {
+      options = options || {};
+
+      var thiz = this,
+          len = frames.length,
+          lastFrame = frames[len - 1],
+          loops = options.loops || 1,
+          totalFrames = len * loops,
+          duration = options.duration || totalFrames * thiz.defaults.frameRate,
+          frameRate = duration / totalFrames,
+          i = 0,
+          funktion = function () {
+            if (i < totalFrames && !thiz._.stopped) {
+              thiz.element.textContent = frames[i % len];
+
+              timeout = setTimeout(funktion, nextFrame(frameRate));
+              i++;
+            } else {
+              i = 0;
+              nextAnimation(thiz);
+            }
+          };
+
+      addToQueue(thiz, "frameByFrame", funktion, duration, lastFrame);
+
+      return thiz;
+    },
+
+    rollNumbers: function (startValue, endValue, options) {
+      options = options || {};
+
+      var thiz = this,
+          difference = endValue - startValue,
+          newValue = startValue,
+          increment = options.increment || 1,
+          addFrame = increment,
+          totalFrames,
+          frameRate,
+          duration,
+          funktion,
+          i = 0;
+
+      if (difference < 0) {
+        difference = -difference;
+        addFrame = -addFrame;
+      }
+
+      totalFrames = difference / increment;
+      frameRate = options.duration / totalFrames || thiz.defaults.frameRate;
+      duration = options.duration || thiz.defaults.frameRate * totalFrames;
+
+      funktion = function () {
+        if (i < totalFrames && !thiz._.stopped) {
+          newValue += addFrame;
+          thiz.element.textContent = newValue;
+
+          timeout = setTimeout(funktion, nextFrame(frameRate));
+          i++;
+        } else {
+          thiz.element.textContent = endValue;
+          newValue = startValue;
+          i = 0;
+          nextAnimation(thiz);
+        }
+      };
+
+      addToQueue(thiz, "rollNumbers", funktion, duration, endValue);
+
+      return thiz;
+    },
+
+    erase: function (options) {
+      options = options || {};
+
+      var thiz = this,
+          text = findText(thiz),
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
+          len = textArray.length,
+          duration = options.duration || thiz.defaults.frameRate * len,
+          frameRate = duration / len,
+          funktion,
+          i = 0;
+
+      funktion = function () {
+        if (i < len && !thiz._.stopped) {
+          textArray.pop();
+          thiz.element.textContent = textArray.join('');
+
+          timeout = setTimeout(funktion, nextFrame(frameRate));
+          i++;
+        } else {
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split('');
+          i = 0;
+          nextAnimation(thiz);
+        }
+      };
+
+      addToQueue(thiz, "erase", funktion, duration, "");
+
+      return thiz;
+    },
+
+    typeIn: function (text, options) {
+      options = options || {};
+
+      var thiz = this,
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
+          displayTextArray = [],
+          len = textArray.length,
+          duration = options.duration || thiz.defaults.frameRate * len,
+          frameRate = duration / len,
+          funktion,
+          i = 0;
+
+      funktion = function () {
+        if (i < len && !thiz._.stopped) {
+          displayTextArray.push(textArray.shift());
+          thiz.element.textContent = displayTextArray.join('');
+          timeout = setTimeout(funktion, nextFrame(frameRate));
+          i++;
+        } else {
+          textArray = displayTextArray;
+          displayTextArray = [];
+          i = 0;
+
+          nextAnimation(thiz);
+        }
+      };
+
+      addToQueue(thiz, "typeIn", funktion, duration, text);
+
+      return thiz;
+    },
+
+    fadeIn: function (options) {
+      options = options || {};
+
+      var thiz = this,
+          text = options.text || findText(thiz),
+          textArray = text.split(''),
+          textLen = textArray.length,
+          inOrOut = arguments[1] === "Out" ? "Out" : "In",
+          fadeIn = inOrOut === "In",
+          fadeOut = !fadeIn,
+          spans = [],
+          spansLen = 10,
+          len = textLen + spansLen,
+          duration = options.duration || thiz.defaults.frameRate * len,
+          frameRate = duration / len,
+          funktion,
+          i;
+
+      for (i = 0; i < spansLen; i++) {
+        spans[i] = {
+          el: document.createElement('span'),
+          arr: []
+        };
+        if (fadeIn) {
+          spans[i].el.style.opacity = i / (spansLen - 1);
+        } else {
+          spans[i].el.style.opacity = 1 - i / (spansLen - 1);
+        }
+      }
+
+      i = 0;
+
+      funktion = function () {
+        var j, span;
+
+        if (i === 0) {
+          thiz.element.style.opacity = 1;
+          thiz.element.textContent = "";
+
+          for (j = spansLen - 1; j >= 0; j--) {
+            spans[j].el.textContent = "";
+            spans[j].arr = [];
+            thiz.element.appendChild(spans[j].el);
+          }
+
+          spans[0].el.textContent = text;
+          spans[0].arr = textArray;
+        }
+
+        if (i < len && !thiz._.stopped) {
+          for (j = spansLen - 1; j > 0; j--) {
+            spans[j].arr.push(spans[j - 1].arr.shift());
+          }
+
+          for (j = 0; j < spansLen; j++) {
+            spans[j].el.textContent = spans[j].arr.join('');
+          }
+
+          timeout = setTimeout(funktion, nextFrame(frameRate));
+          i++;
+        } else {
+          textArray = text.split('');
+          thiz.element.style.opacity = +fadeIn;
+          thiz.element.textContent = text;
+          i = 0;
+          if (fadeOut && options.remove) {
+            thiz.element.remove();
+          }
+
+          nextAnimation(thiz);
+        }
+      };
+
+      addToQueue(thiz, "fade" + inOrOut, funktion, duration, text);
+
+      return thiz;
+    },
+
+    fadeOut: function (options) {
+      this.fadeIn(options, "Out");
+
+      return this;
+    },
+
+    pause: function (duration) {
+      duration = duration || this.defaults.pauseDuration;
+
+      var thiz = this,
+          endText = findText(thiz),
+          funktion = function () {
+            timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
+          };
+
+      addToQueue(thiz, "pause", funktion, duration, endText);
+
+      return thiz;
+    },
+
+    clearTimeline: function () {
+      this._.queue = [];
+      this._.duration = 0;
+      this._.endText = "";
+
+      return this.stop(true);
+    }
+
   };
-  
-  Timeline.prototype.clearTimeline = function () {
-    this._.queue = [];
-    this._.duration = 0;
-    this._.endText = "";
-  
-    return this.stop(true);
-  };
-  
+
   atc = function (elementID) {  
     return new Timeline(elementID);
   };
