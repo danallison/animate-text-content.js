@@ -66,7 +66,7 @@
   
   Timeline.prototype = {
     go: function (timelineObj, options) {
-      options = options || {};
+      options || (options = {});
 
       var thiz = this,
           len = thiz._.queue.length,
@@ -175,7 +175,7 @@
     },
 
     custom: function (customFunktion, options) {
-      options = options || {};
+      options || (options = {});
 
       var thiz = this,
           duration = options.duration || 0,
@@ -191,7 +191,7 @@
     },
 
     frameByFrame: function (frames, options) {
-      options = options || {};
+      options || (options = {});
 
       var thiz = this,
           len = frames.length,
@@ -219,7 +219,7 @@
     },
 
     rollNumbers: function (startValue, endValue, options) {
-      options = options || {};
+      options || (options = {});
 
       var thiz = this,
           difference = endValue - startValue,
@@ -262,7 +262,7 @@
     },
 
     erase: function (options) {
-      options = options || {};
+      options || (options = {});
 
       var thiz = this,
           text = findText(thiz),
@@ -293,7 +293,7 @@
     },
 
     typeIn: function (text, options) {
-      options = options || {};
+      options || (options = {});
 
       var thiz = this,
           textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
@@ -325,7 +325,7 @@
     },
 
     fadeIn: function (options) {
-      options = options || {};
+      options || (options = {});
 
       var thiz = this,
           text = options.text || findText(thiz),
