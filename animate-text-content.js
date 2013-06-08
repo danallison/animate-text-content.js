@@ -35,6 +35,9 @@
 
     return text;
   },
+  isDefined = function (thing) {
+    return thing !== void 0;
+  },
   nextFrame = function (frameRate) {
     var now, difference;
     
@@ -320,6 +323,86 @@
       };
 
       addToQueue(thiz, "typeIn", funktion, duration, text);
+
+      return thiz;
+    },
+    
+    styleWipe: function (options) {
+      options || (options = {});
+
+      var thiz = this,
+          text = options.text || findText(thiz),
+          textArray = text.split(''),
+          textLen = textArray.length,
+          styleAttr = options.styleAttr || options.styleAttribute || options.attr || options.attribute || "font-size",
+          startingValue = isDefined(options.startingValue) ? options.startingValue : getComputedStyle(thiz.element)[styleAttr],
+          currentValue = startingValue,
+          endValue = isDefined(options.endValue) ? options.endValue : startingValue,
+          unit = isDefined(options.unit) ? options.unit : "px",// TODO add regex to extract unit from starting value
+          template = options.template || "{{}}" + unit,
+          direction = 
+          spans = [],
+          spansLen = 10,
+          increment = (endValue - startingValue) / (spansLen - 1),
+          len = textLen + spansLen,
+          duration = options.duration || thiz.defaults.frameRate * len,
+          frameRate = duration / len,
+          funktion,
+          i;
+
+      for (i = 0; i < spansLen; i++) {
+        spans[i] = {
+          el: document.createElement('span'),
+          arr: []
+        };
+        spans[i].el.style[styleAttr] = currentValue + unit;
+        currentValue += increment;
+        console.log(currentValue);
+      }
+
+      i = 0;
+
+      funktion = function () {
+        var j, span;
+
+        if (i === 0) {
+          thiz.element.textContent = "";
+
+          for (j = spansLen - 1; j >= 0; j--) {
+            spans[j].el.textContent = "";
+            spans[j].arr = [];
+            thiz.element.appendChild(spans[j].el);
+          }
+
+          spans[0].el.textContent = text;
+          spans[0].arr = textArray;
+        }
+
+        if (i < len && !thiz._.stopped) {
+          for (j = spansLen - 1; j > 0; j--) {
+            spans[j].arr.push(spans[j - 1].arr.shift());
+          }
+
+          for (j = 0; j < spansLen; j++) {
+            spans[j].el.textContent = spans[j].arr.join('');
+          }
+
+          timeout = setTimeout(funktion, nextFrame(frameRate));
+          i++;
+        } else {
+          textArray = text.split('');
+          thiz.element.style[styleAttr] = endValue + unit;
+          thiz.element.textContent = text;
+          i = 0;
+          if (options.remove) {
+            thiz.element.remove();
+          }
+
+          nextAnimation(thiz);
+        }
+      };
+
+      addToQueue(thiz, "styleWipe", funktion, duration, text);
 
       return thiz;
     },
