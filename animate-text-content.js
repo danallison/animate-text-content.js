@@ -118,13 +118,13 @@
     },
 
     pauseDuration: function (duration) {
-      this.defaults.pauseDuration = duration || this.defaults.pauseDuration;
+      this.defaults.pauseDuration = isDefined(duration) ? duration : this.defaults.pauseDuration;
 
       return this;
     },
 
     loop: function (bool) {
-      this.defaults.loop = typeof bool === "undefined" ? true : bool;
+      this.defaults.loop = isDefined(bool) ? bool : true;
 
       return this;
     },
@@ -326,7 +326,7 @@
 
       return thiz;
     },
-    
+
     styleWipe: function (options) {
       options || (options = {});
 
@@ -513,7 +513,7 @@
 
       return this.stop(true);
     }
-
+    
   };
 
   atc = function (elementID) {  
@@ -533,13 +533,13 @@
   };
   
   atc.pauseDuration = function (duration) {
-    atc.defaults.pauseDuration = duration || atc.defaults.pauseDuration;
+    atc.defaults.pauseDuration = isDefined(duration) ? duration : atc.defaults.pauseDuration;
     
     return atc;
   };
   
   atc.loop = function (bool) {
-    atc.defaults.loop = typeof bool === "undefined" ? true : bool;
+    atc.defaults.loop = isDefined(bool) ? bool : true;
     
     return atc;
   };
