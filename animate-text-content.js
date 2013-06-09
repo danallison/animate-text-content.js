@@ -18,6 +18,7 @@
       endText: ""
     };
   },
+  // Private methods
   addToQueue = function (thiz, methodName, funktion, duration, endText) {
     thiz._.duration += duration;
     thiz._.endText = endText;
@@ -35,19 +36,6 @@
 
     return text;
   },
-  isDefined = function (thing) {
-    return thing !== void 0;
-  },
-  nextFrame = function (frameRate) {
-    var now, difference;
-    
-    now = new Date().getTime();
-    expected = expected || now;
-    difference = now - expected;
-
-    expected += frameRate;
-    return Math.max(0, frameRate - difference);
-  },
   nextAnimation = function (thiz) {
     expected = null;
     
@@ -64,78 +52,26 @@
       }
     }
   },
+  // Helper methods and vars
+  isDefined = function (thing) {
+    return thing !== void 0;
+  },
+  nextFrame = function (frameRate) {
+    var now, difference;
+    
+    now = new Date().getTime();
+    expected = expected || now;
+    difference = now - expected;
+
+    expected += frameRate;
+    return Math.max(0, frameRate - difference);
+  },
   expected,
   timeout;
   
   Timeline.prototype = {
-    go: function (timelineObj, options) {
-      options || (options = {});
 
-      var thiz = this,
-          len = thiz._.queue.length,
-          funktion;
-
-      if (timelineObj) {
-        funktion = function () {
-          timelineObj.go();
-          if (options.delay) {
-            timeout = setTimeout(function () { nextAnimation(thiz); }, timelineObj._.duration);
-          } else {
-            nextAnimation(thiz);
-          }
-        };
-
-        addToQueue(thiz, "go", funktion, timelineObj.duration, timelineObj.endText);
-      } else if (len > 0) {
-        thiz._.stopped = false;
-        nextAnimation(thiz);
-      }
-
-      return thiz;
-    },
-
-    stop: function (now) {
-      var thiz = this;
-      if (now) {
-        thiz._.stopped = true;
-        clearTimeout(timeout);
-        expected = null;
-      } else {
-        var funktion = function () {
-              thiz._.stopped = true;
-            };
-
-        addToQueue(thiz, "stop", funktion, 0, findText(thiz));
-      }
-
-      return thiz;
-    },
-
-    frameRate: function (frameRate) {
-      this.defaults.frameRate = frameRate || this.defaults.frameRate;
-
-      return this;
-    },
-
-    pauseDuration: function (duration) {
-      this.defaults.pauseDuration = isDefined(duration) ? duration : this.defaults.pauseDuration;
-
-      return this;
-    },
-
-    loop: function (bool) {
-      this.defaults.loop = isDefined(bool) ? bool : true;
-
-      return this;
-    },
-
-    on: function (eventType, funktion, useCapture) {
-      useCapture = useCapture || false;
-      this.element.addEventListener(eventType, funktion, useCapture);
-
-      return this;
-    },
-
+    // Queued methods. These methods add callbacks to the queue that execute in sequence only when .go() is called
     text: function (text) {
       var thiz = this,
           funktion;
@@ -327,6 +263,102 @@
       return thiz;
     },
 
+    pause: function (duration) {
+      duration = duration || this.defaults.pauseDuration;
+
+      var thiz = this,
+          endText = findText(thiz),
+          funktion = function () {
+            timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
+          };
+
+      addToQueue(thiz, "pause", funktion, duration, endText);
+
+      return thiz;
+    },
+
+    // If a truthy value is passed to this method, the queue is bypassed and any animation in progress stops immediately
+    stop: function (now) {
+      var thiz = this;
+      if (now) {
+        thiz._.stopped = true;
+        clearTimeout(timeout);
+        expected = null;
+      } else {
+        var funktion = function () {
+              thiz._.stopped = true;
+            };
+
+        addToQueue(thiz, "stop", funktion, 0, findText(thiz));
+      }
+
+      return thiz;
+    },
+
+    // Without arguments, .go() initiates the animation. If a timeline object is passed in, its queue is placed into the queue of this.
+    go: function (timelineObj, options) {
+      options || (options = {});
+
+      var thiz = this,
+          len = thiz._.queue.length,
+          funktion;
+
+      if (timelineObj) {
+        funktion = function () {
+          timelineObj.go();
+          if (options.delay) {
+            timeout = setTimeout(function () { nextAnimation(thiz); }, timelineObj._.duration);
+          } else {
+            nextAnimation(thiz);
+          }
+        };
+
+        addToQueue(thiz, "go", funktion, timelineObj.duration, timelineObj.endText);
+      } else if (len > 0) {
+        thiz._.stopped = false;
+        nextAnimation(thiz);
+      }
+
+      return thiz;
+    },
+
+    // Default setters. These methods set defaults for a given Timeline instance.
+    frameRate: function (frameRate) {
+      this.defaults.frameRate = frameRate || this.defaults.frameRate;
+
+      return this;
+    },
+
+    pauseDuration: function (duration) {
+      this.defaults.pauseDuration = isDefined(duration) ? duration : this.defaults.pauseDuration;
+
+      return this;
+    },
+
+    loop: function (bool) {
+      this.defaults.loop = isDefined(bool) ? bool : true;
+
+      return this;
+    },
+
+    // Other methods
+    on: function (eventType, funktion, useCapture) {
+      useCapture = useCapture || false;
+      this.element.addEventListener(eventType, funktion, useCapture);
+
+      return this;
+    },
+
+    clearTimeline: function () {
+      this._.queue = [];
+      this._.queueIndex = 0;
+      this._.duration = 0;
+      this._.endText = "";
+
+      return this.stop(true);
+    },
+
+    // Style animation methods. These can safely be removed if not needed.
     styleWipe: function (options) {
       options || (options = {});
 
@@ -489,37 +521,15 @@
       this.fadeIn(options, "Out");
 
       return this;
-    },
-
-    pause: function (duration) {
-      duration = duration || this.defaults.pauseDuration;
-
-      var thiz = this,
-          endText = findText(thiz),
-          funktion = function () {
-            timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
-          };
-
-      addToQueue(thiz, "pause", funktion, duration, endText);
-
-      return thiz;
-    },
-
-    clearTimeline: function () {
-      this._.queue = [];
-      this._.queueIndex = 0;
-      this._.duration = 0;
-      this._.endText = "";
-
-      return this.stop(true);
     }
-    
+
   };
 
   atc = function (elementID) {  
     return new Timeline(elementID);
   };
   
+  // Global defaults and setters
   atc.defaults = {
     frameRate: 1000/24,
     pauseDuration: 2000,
