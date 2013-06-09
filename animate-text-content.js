@@ -1,8 +1,11 @@
 (function () {
-  var Timeline = function (elementID) {
+  
+  var glob = this;
+
+  var Timeline = function (selector) {
     var thiz = this;
-    
-    thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID || {};
+
+    thiz.element = selectEl(selector);
     
     thiz.defaults = {
       frameRate: atc.defaults.frameRate,
@@ -53,6 +56,13 @@
     }
   },
   // Helper methods and vars
+  selectEl = function (selector) {
+    if (glob.jQuery || glob.Zepto || glob.ender || glob.$) {
+      return glob.$(selector)[0] || {};
+    } else {
+      return typeof selector === "string" ? document.getElementById(selector.replace(/#/, "")) : selector[0] || selector || {};
+    }
+  },
   isDefined = function (thing) {
     return thing !== void 0;
   },
@@ -101,10 +111,10 @@
       return thiz;
     },
 
-    switchElement: function (elementID, endText) {
+    switchElement: function (selector, endText) {
       var thiz = this,
       funktion = function () {
-        thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
+        thiz.element = selectEl(selector);
         nextAnimation(thiz);
       };
 
@@ -525,8 +535,8 @@
 
   };
 
-  atc = function (elementID) {  
-    return new Timeline(elementID);
+  atc = function (selector) {  
+    return new Timeline(selector);
   };
   
   // Global defaults and setters
