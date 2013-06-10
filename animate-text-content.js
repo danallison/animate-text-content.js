@@ -57,11 +57,8 @@
   },
   // Helper methods and vars
   selectEl = function (selector) {
-    if (glob.jQuery || glob.Zepto || glob.ender || glob.$) {
-      return glob.$(selector)[0] || {};
-    } else {
-      return typeof selector === "string" ? document.getElementById(selector.replace(/#/, "")) : selector[0] || selector || {};
-    }
+    if (glob.jQuery || glob.Zepto || glob.ender || glob.$) return glob.$(selector)[0] || {};
+    return typeof selector === "string" ? document.getElementById(selector.replace(/#/, "")) : selector[0] || selector || {};
   },
   isDefined = function (thing) {
     return thing !== void 0;
