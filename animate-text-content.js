@@ -86,7 +86,7 @@
       var thiz = this,
           funktion;
 
-      if (text) {
+      if (isDefined(text)) {
         funktion = function () {
           thiz.element.textContent = text;
           nextAnimation(thiz);
