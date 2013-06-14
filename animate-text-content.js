@@ -2,7 +2,7 @@
   
   var glob = this;
 
-  var Timeline = function (selector) {
+  var TextAnimator = function (selector) {
     var thiz = this;
 
     thiz.element = selectEl(selector);
@@ -76,7 +76,7 @@
   expected,
   timeout;
   
-  Timeline.prototype = {
+  TextAnimator.prototype = {
 
     // Queued methods. These methods add callbacks to the queue that execute in sequence only when .go() is called
     text: function (text) {
@@ -302,25 +302,25 @@
       return thiz;
     },
 
-    // Without arguments, .go() initiates the animation. If a timeline object is passed in, its queue is placed into the queue of this.
-    go: function (timelineObj, options) {
+    // Without arguments, .go() initiates the animation. If a textAnimator object is passed in, its queue is placed into the queue of this.
+    go: function (textAnimatorObj, options) {
       options || (options = {});
 
       var thiz = this,
           len = thiz._.queue.length,
           funktion;
 
-      if (timelineObj) {
+      if (textAnimatorObj) {
         funktion = function () {
-          timelineObj.go();
+          textAnimatorObj.go();
           if (options.delay) {
-            timeout = setTimeout(function () { nextAnimation(thiz); }, timelineObj._.duration);
+            timeout = setTimeout(function () { nextAnimation(thiz); }, textAnimatorObj._.duration);
           } else {
             nextAnimation(thiz);
           }
         };
 
-        addToQueue(thiz, "go", funktion, timelineObj.duration, timelineObj.endText);
+        addToQueue(thiz, "go", funktion, textAnimatorObj.duration, textAnimatorObj.endText);
       } else if (len > 0) {
         thiz._.stopped = false;
         nextAnimation(thiz);
@@ -329,7 +329,7 @@
       return thiz;
     },
 
-    // Default setters. These methods set defaults for a given Timeline instance.
+    // Default setters. These methods set defaults for a given TextAnimator instance.
     frameRate: function (frameRate) {
       this.defaults.frameRate = frameRate || this.defaults.frameRate;
 
@@ -533,7 +533,7 @@
   };
 
   atc = function (selector) {  
-    return new Timeline(selector);
+    return new TextAnimator(selector);
   };
   
   // Global defaults and setters
