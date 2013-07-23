@@ -1,11 +1,17 @@
-(function () {
-  
-  var glob = this;
-
-  var TextAnimator = function (selector) {
+(function (glob) {
+  var $ = glob.$ || function (selector) {
+    var el = typeof selector === "string" ? document.getElementById(selector.replace(/#/, "")) : selector || {},
+    arr = [el];
+    arr.on = function (eventType, funktion, useCapture) {
+      useCapture = useCapture || false;
+      el.addEventListener(eventType, funktion, useCapture);
+    };
+    return arr
+  },
+  TextAnimator = function (selector) {
     var thiz = this;
 
-    thiz.element = selectEl(selector);
+    thiz.element = $(selector)[0];
     
     thiz.defaults = {
       frameRate: atc.defaults.frameRate,
@@ -56,10 +62,6 @@
     }
   },
   // Helper methods and vars
-  selectEl = function (selector) {
-    if (glob.jQuery || glob.Zepto || glob.ender || glob.$) return glob.$(selector)[0] || {};
-    return typeof selector === "string" ? document.getElementById(selector.replace(/#/, "")) : selector[0] || selector || {};
-  },
   isDefined = function (thing) {
     return thing !== void 0;
   },
@@ -111,7 +113,7 @@
     switchElement: function (selector, endText) {
       var thiz = this,
       funktion = function () {
-        thiz.element = selectEl(selector);
+        thiz.element = $(selector)[0];
         nextAnimation(thiz);
       };
 
@@ -350,8 +352,7 @@
 
     // Other methods
     on: function (eventType, funktion, useCapture) {
-      useCapture = useCapture || false;
-      this.element.addEventListener(eventType, funktion, useCapture);
+      $(this.element).on(eventType, funktion, useCapture)
 
       return this;
     },
@@ -560,4 +561,4 @@
     
     return atc;
   };
-})();
+})(this);
