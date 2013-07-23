@@ -533,9 +533,16 @@
 
   };
 
-  atc = function (selector) {  
+  var originalAtc = glob.atc;
+
+  atc = thisAtc = function (selector) {  
     return new TextAnimator(selector);
   };
+
+  atc.noConflict = function () {
+    atc = originalAtc;
+    return thisAtc;
+  }
   
   // Global defaults and setters
   atc.defaults = {
