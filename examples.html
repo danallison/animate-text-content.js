@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<head>
 <meta charset="utf-8">
 <style>
 
@@ -13,6 +14,7 @@ div {
 }
 
 </style>
+</head>
 <body>
   <div>
     <header><h1>Examples</h1></header>
@@ -41,7 +43,7 @@ div {
     atc.loop();
     
     var fruitExample = function () {
-      var fruit = atc("fruit"),
+      var fruit = atc("#fruit"),
           fruits = ["apples", 
                     "bananas", 
                     "oranges", 
@@ -63,14 +65,14 @@ div {
             .stop();
       }
 
-      atc("fruitButton").on("click", function () {
+      atc("#fruitButton").on("click", function () {
         fruit.go();
       });
     };
     
     var blueberriesExample = function () {
-      atc("eatButton").on("click", function () {
-        var blueberries = atc("blueberries").loop(false).frameRate(1000/12),
+      atc("#eatButton").on("click", function () {
+        var blueberries = atc("#blueberries").loop(false).frameRate(1000/12),
             alreadyEaten = +blueberries.text(),
             someBlueberries = Math.round(Math.random() * 20) + 3;
             
@@ -83,7 +85,7 @@ div {
     };
     
     var smileExample = function () {
-      var smile = atc("smile").frameRate(1000/12),
+      var smile = atc("#smile").frameRate(1000/12),
           smiles = ["smile.smile. :)", 
                     "mile.smile.s :]", 
                     "ile.smile.sm :}", 
@@ -95,7 +97,7 @@ div {
     };
     
     var colorExample = function () {
-      var color = atc("color"),
+      var color = atc("#color"),
           colors = ["red", 
                     "green", 
                     "yellow", 
