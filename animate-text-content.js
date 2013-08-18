@@ -19,26 +19,24 @@
       loop: atc.defaults.loop
     };
     
-    thiz._ = {
-      queue: [],
-      queueIndex: 0,
-      stopped: true,
-      duration: 0,
-      endText: ""
-    };
+    thiz._queue = [];
+    thiz._queueIndex = 0;
+    thiz._stopped = true;
+    thiz._duration = 0;
+    thiz._endText = "";
   },
   // Private methods
   addToQueue = function (thiz, methodName, funktion, duration, endText) {
-    thiz._.duration += duration;
-    thiz._.endText = endText;
-    thiz._.queue.push({ methodName: methodName, funktion: funktion, duration: duration, endText: endText });
+    thiz._duration += duration;
+    thiz._endText = endText;
+    thiz._queue.push({ methodName: methodName, funktion: funktion, duration: duration, endText: endText });
   },
   findText = function (thiz) {
     var text,
-        len = thiz._.queue.length;
+        len = thiz._queue.length;
 
     if (len) {
-      text = thiz._.queue[len - 1].endText;
+      text = thiz._queue[len - 1].endText;
     } else {
       text = thiz.element.textContent;
     }
@@ -48,16 +46,16 @@
   nextAnimation = function (thiz) {
     expected = null;
     
-    if (thiz._.queueIndex < thiz._.queue.length && !thiz._.stopped) {
-      thiz._.queueIndex += 1;
-      thiz._.queue[thiz._.queueIndex - 1].funktion();
-    } else if (!thiz._.stopped) {
-      thiz._.queueIndex = 0;
+    if (thiz._queueIndex < thiz._queue.length && !thiz._stopped) {
+      thiz._queueIndex += 1;
+      thiz._queue[thiz._queueIndex - 1].funktion();
+    } else if (!thiz._stopped) {
+      thiz._queueIndex = 0;
       if (thiz.defaults.loop) {
-        thiz._.queueIndex += 1;
-        thiz._.queue[thiz._.queueIndex - 1].funktion();
+        thiz._queueIndex += 1;
+        thiz._queue[thiz._queueIndex - 1].funktion();
       } else {
-        thiz._.stopped = true;
+        thiz._stopped = true;
       }
     }
   },
@@ -150,7 +148,7 @@
           frameRate = duration / totalFrames,
           i = 0,
           funktion = function () {
-            if (i < totalFrames && !thiz._.stopped) {
+            if (i < totalFrames && !thiz._stopped) {
               thiz.element.textContent = frames[i % len];
 
               timeout = setTimeout(funktion, nextFrame(frameRate));
@@ -190,7 +188,7 @@
       duration = options.duration || thiz.defaults.frameRate * totalFrames;
 
       funktion = function () {
-        if (i < totalFrames && !thiz._.stopped) {
+        if (i < totalFrames && !thiz._stopped) {
           newValue += addFrame;
           thiz.element.textContent = newValue;
 
@@ -222,7 +220,7 @@
           i = 0;
 
       funktion = function () {
-        if (i < len && !thiz._.stopped) {
+        if (i < len && !thiz._stopped) {
           textArray.pop();
           thiz.element.textContent = textArray.join('');
 
@@ -253,7 +251,7 @@
           i = 0;
 
       funktion = function () {
-        if (i < len && !thiz._.stopped) {
+        if (i < len && !thiz._stopped) {
           displayTextArray.push(textArray.shift());
           thiz.element.textContent = displayTextArray.join('');
           timeout = setTimeout(funktion, nextFrame(frameRate));
@@ -290,12 +288,12 @@
     stop: function (now) {
       var thiz = this;
       if (now) {
-        thiz._.stopped = true;
+        thiz._stopped = true;
         clearTimeout(timeout);
         expected = null;
       } else {
         var funktion = function () {
-              thiz._.stopped = true;
+              thiz._stopped = true;
             };
 
         addToQueue(thiz, "stop", funktion, 0, findText(thiz));
@@ -309,14 +307,14 @@
       options || (options = {});
 
       var thiz = this,
-          len = thiz._.queue.length,
+          len = thiz._queue.length,
           funktion;
 
       if (textAnimatorObj) {
         funktion = function () {
           textAnimatorObj.go();
           if (options.delay) {
-            timeout = setTimeout(function () { nextAnimation(thiz); }, textAnimatorObj._.duration);
+            timeout = setTimeout(function () { nextAnimation(thiz); }, textAnimatorObj._duration);
           } else {
             nextAnimation(thiz);
           }
@@ -324,7 +322,7 @@
 
         addToQueue(thiz, "go", funktion, textAnimatorObj.duration, textAnimatorObj.endText);
       } else if (len > 0) {
-        thiz._.stopped = false;
+        thiz._stopped = false;
         nextAnimation(thiz);
       }
 
@@ -358,17 +356,17 @@
     },
 
     clearTimeline: function () {
-      this._.queue = [];
-      this._.queueIndex = 0;
-      this._.duration = 0;
-      this._.endText = "";
+      this._queue = [];
+      this._queueIndex = 0;
+      this._duration = 0;
+      this._endText = "";
 
       return this.stop(true);
     }
 
   };
 
-  var originalAtc = glob.atc;
+  var thisAtc, originalAtc = glob.atc;
 
   atc = thisAtc = function (selector) {  
     return new TextAnimator(selector);
