@@ -33,10 +33,11 @@
   },
   findText = function (thiz) {
     var text,
-        len = thiz._queue.length;
+        thiz_queue = thiz._queue,
+        len = thiz_queue.length;
 
     if (len) {
-      text = thiz._queue[len - 1].endText;
+      text = thiz_queue[len - 1].endText;
     } else {
       text = thiz.element.textContent;
     }
@@ -45,15 +46,16 @@
   },
   nextAnimation = function (thiz) {
     expected = null;
+    var thiz_queue = thiz._queue;
     
-    if (thiz._queueIndex < thiz._queue.length && !thiz._stopped) {
+    if (thiz._queueIndex < thiz_queue.length && !thiz._stopped) {
       thiz._queueIndex += 1;
-      thiz._queue[thiz._queueIndex - 1].funktion();
+      thiz_queue[thiz._queueIndex - 1].funktion();
     } else if (!thiz._stopped) {
       thiz._queueIndex = 0;
       if (thiz.defaults.loop) {
         thiz._queueIndex += 1;
-        thiz._queue[thiz._queueIndex - 1].funktion();
+        thiz_queue[thiz._queueIndex - 1].funktion();
       } else {
         thiz._stopped = true;
       }
@@ -81,11 +83,12 @@
     // Queued methods. These methods add callbacks to the queue that execute in sequence only when .go() is called
     text: function (text) {
       var thiz = this,
+          element = thiz.element,
           funktion;
 
       if (isDefined(text)) {
         funktion = function () {
-          thiz.element.textContent = text;
+          element.textContent = text;
           nextAnimation(thiz);
         };
 
@@ -93,13 +96,14 @@
 
         return thiz;
       }
-      return thiz.element.textContent;
+      return element.textContent;
     },
 
     html: function (html) {
       var thiz = this,
+          element = thiz.element,
       funktion = function () {
-        thiz.element.innerHTML = html;
+        element.innerHTML = html;
         nextAnimation(thiz);
       };
 
@@ -140,6 +144,7 @@
       options || (options = {});
 
       var thiz = this,
+          element = thiz.element,
           len = frames.length,
           lastFrame = frames[len - 1],
           loops = options.loops || 1,
@@ -149,7 +154,7 @@
           i = 0,
           funktion = function () {
             if (i < totalFrames && !thiz._stopped) {
-              thiz.element.textContent = frames[i % len];
+              element.textContent = frames[i % len];
 
               timeout = setTimeout(funktion, nextFrame(frameRate));
               i++;
@@ -168,13 +173,15 @@
       options || (options = {});
 
       var thiz = this,
+          element = thiz.element,
+          defaults = thiz.defaults,
           difference = endValue - startValue,
           newValue = startValue,
           increment = options.increment || 1,
+          duration = options.duration,
           addFrame = increment,
           totalFrames,
           frameRate,
-          duration,
           funktion,
           i = 0;
 
@@ -184,18 +191,18 @@
       }
 
       totalFrames = difference / increment;
-      frameRate = options.duration / totalFrames || thiz.defaults.frameRate;
-      duration = options.duration || thiz.defaults.frameRate * totalFrames;
+      frameRate = duration / totalFrames || defaults.frameRate;
+      duration = duration || defaults.frameRate * totalFrames;
 
       funktion = function () {
         if (i < totalFrames && !thiz._stopped) {
           newValue += addFrame;
-          thiz.element.textContent = newValue;
+          element.textContent = newValue;
 
           timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
-          thiz.element.textContent = endValue;
+          element.textContent = endValue;
           newValue = startValue;
           i = 0;
           nextAnimation(thiz);
@@ -211,6 +218,7 @@
       options || (options = {});
 
       var thiz = this,
+          element = thiz.element,
           text = findText(thiz),
           textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
           len = textArray.length,
@@ -222,7 +230,7 @@
       funktion = function () {
         if (i < len && !thiz._stopped) {
           textArray.pop();
-          thiz.element.textContent = textArray.join('');
+          element.textContent = textArray.join('');
 
           timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
@@ -242,6 +250,7 @@
       options || (options = {});
 
       var thiz = this,
+          element = thiz.element,
           textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
           displayTextArray = [],
           len = textArray.length,
@@ -253,7 +262,7 @@
       funktion = function () {
         if (i < len && !thiz._stopped) {
           displayTextArray.push(textArray.shift());
-          thiz.element.textContent = displayTextArray.join('');
+          element.textContent = displayTextArray.join('');
           timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
