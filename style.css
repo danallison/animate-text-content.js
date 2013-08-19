@@ -9,15 +9,19 @@
     font-style: normal;
 }
 body {
-  background: url('subtle_dots.png') #eee;
+  /*background: url('subtle_dots.png') #eee;*/
+  background: #eed;
   font-size: 18px;
-  font-family: 'Helvetica', sans-serif;
+  font-family: 'Amethysta', serif;
   margin: 0;
+  color: #222;
 }
 header {
-  background: url('subtle_carbon.png') #1F5C2F;
-  font-family: 'NewRegular', Helvetica, sans-serif;
-  color: #eee;
+  /*background: url('subtle_carbon.png') #1F5C2F;*/
+  background: #fee;
+  /*font-family: 'NewRegular', Helvetica, sans-serif;*/
+  font-family: 'Cutive', serif;
+  color: #000;
   opacity: 0.8;
   padding: 10px 30px;
   margin-bottom: 10px;
@@ -44,7 +48,7 @@ div {
   color: #5570A3;
 }
 .js, .html {
-  font-family: Monospace;
+  font-family: 'Cutive Mono', Monospace;
 }
 input#frames {
   width: 270px;

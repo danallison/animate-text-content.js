@@ -2,6 +2,9 @@
 <head>
 <meta charset="utf-8">
 <title>animate-text-content.js</title>
+<link href='http://fonts.googleapis.com/css?family=Cutive' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Cutive+Mono' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Amethysta' rel='stylesheet' type='text/css'>
 <link href="style.css" rel="stylesheet">
 <script src="animate-text-content.js"></script>
 </head>
@@ -25,7 +28,7 @@
         <span class="html">&lt;div id='typeInExample'&gt;</span><span id="typeInExample"></span><span class="html">&lt;/div&gt;</span>
       </div>
       <div class="js">
-        atc('typeInExample').typeIn('<input id="typeInput" type="text" placeholder="type something here">')
+        atc('#typeInExample').typeIn('<input id="typeInput" type="text" placeholder="type something here">')
         <input id="typeInButton" type="button" value=".go()">
       </div>
       <script>
@@ -47,7 +50,7 @@
         <span class="html">&lt;span id='rollNumExample'&gt;</span><span id="rollNumExample"></span><span class="html">&lt;/span&gt;</span>
       </div>
       <div class="js">
-        atc('rollNumExample').rollNumbers(<input id="rollInput1" type="text" placeholder="type a number">, <input id="rollInput2" type="text" placeholder="type another number">)
+        atc('#rollNumExample').rollNumbers(<input id="rollInput1" type="number" placeholder="type a number">, <input id="rollInput2" type="number" placeholder="type another number">)
         <input id="rollButton" type="button" value=".go()">
       </div>
       <script>
@@ -70,7 +73,7 @@
         <span class="html">&lt;span id='frameByFrameExample'&gt;</span><span id="frameByFrameExample"></span><span class="html">&lt;/span&gt;</span>
       </div>
       <div class="js">
-        atc('frameByFrameExample').frameByFrame([<input id="frames" type="text" placeholder="type in a series of frames, separated by commas">]).loop()
+        atc('#frameByFrameExample').frameByFrame([<input id="frames" type="text" placeholder="type in a series of frames, separated by commas">]).loop()
         <input id="frameButton" type="button" value=".go()">
       </div>
       <script>
