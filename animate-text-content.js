@@ -1,311 +1,392 @@
-(function () {
-  atc = function (elementID) {
-    var Timeline = function (elementID) {
-      this.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID || {};
-      this.queue = [];
-      this.queueIndex = 0;
-      this.stopped = false;
-      this.duration = 0;
-      this.endText = "";
-      this.defaults = {
-        frameRate: atc.defaults.frameRate,
-        pauseDuration: atc.defaults.pauseDuration,
-        loop: atc.defaults.loop
-      };
-    };
-  
-    Timeline.prototype.go = function (timelineObj) {
-      var thiz = this, 
-          funktion,
-          len,
-          nextAnimation;
-    
-      if (timelineObj) {
-        funktion = function () {
-          timelineObj.go();
-        };
-      
-        this.addToQueue(funktion, timelineObj.duration, timelineObj.endText);
-      } else {
-        len = this.queue.length;
-        this.stopped = false;
-        
-        nextAnimation = function () {
-          if (thiz.queueIndex < len && !thiz.stopped) {
-            thiz.queue[thiz.queueIndex].funktion();
-            setTimeout(nextAnimation, thiz.queue[thiz.queueIndex].duration);
-            thiz.queueIndex += 1;
-          } else if (!thiz.stopped) {
-            thiz.queueIndex = 0;
-            if (thiz.defaults.loop) {
-              nextAnimation();
-            }
-          }
-        };
-      
-        nextAnimation();
-      }
-    
-      return this;
-    };
-    
-    Timeline.prototype.stop = function (now) {
-      if (now) {
-        this.stopped = true;
-      } else {
-        var thiz = this,
-        funktion = function () {
-          thiz.stopped = true;
-        };
-    
-        this.addToQueue(funktion, 0, this.findText());
-      }
-    
-      return this;
-    };
-    
-    Timeline.prototype.frameRate = function (frameRate) {
-      this.defaults.frameRate = frameRate || this.defaults.frameRate;
-      
-      return this;
-    };
-    
-    Timeline.prototype.pauseDuration = function (duration) {
-      this.defaults.pauseDuration = duration || this.defaults.pauseDuration;
-      
-      return this;
-    };
-    
-    Timeline.prototype.loop = function (bool) {
-      this.defaults.loop = typeof bool === "undefined" ? true : bool;
-
-      return this;
-    };
-    
-    Timeline.prototype.findText = function () {
-      var text;
-    
-      try {
-        text = this.queue[this.queue.length - 1].endText;
-      } catch (e) {
-        text = this.element.textContent;
-      }
-    
-      return text;
-    };
-  
-    Timeline.prototype.addToQueue = function (funktion, duration, endText) {
-      this.duration += duration;
-      this.endText = endText;
-      this.queue.push({ funktion: funktion, duration: duration, endText: endText });
-    };
-    
-    Timeline.prototype.on = function (eventType, funktion, useCapture) {
+(function (glob) {
+  var $ = glob.$ || function (selector) {
+    var el = typeof selector === "string" ? document.getElementById(selector.replace(/#/, "")) : selector || {},
+    arr = [el];
+    arr.on = function (eventType, funktion, useCapture) {
       useCapture = useCapture || false;
-      this.element.addEventListener(eventType, funktion, useCapture);
-      
-      return this;
+      el.addEventListener(eventType, funktion, useCapture);
+    };
+    return arr
+  },
+  TextAnimator = function (selector) {
+    var thiz = this;
+
+    thiz.element = $(selector)[0];
+    
+    thiz.defaults = {
+      frameRate: atc.defaults.frameRate,
+      pauseDuration: atc.defaults.pauseDuration,
+      loop: atc.defaults.loop
     };
     
-    Timeline.prototype.text = function (text) {
-      if (text) {
-        var thiz = this,
-            funktion;
+    thiz._queue = [];
+    thiz._queueIndex = 0;
+    thiz._stopped = true;
+    thiz._duration = 0;
+    thiz._endText = "";
+  },
+  // Private methods
+  addToQueue = function (thiz, methodName, funktion, duration, endText) {
+    thiz._duration += duration;
+    thiz._endText = endText;
+    thiz._queue.push({ methodName: methodName, funktion: funktion, duration: duration, endText: endText });
+  },
+  findText = function (thiz) {
+    var text,
+        thiz_queue = thiz._queue,
+        len = thiz_queue.length;
+
+    if (len) {
+      text = thiz_queue[len - 1].endText;
+    } else {
+      text = thiz.element.textContent;
+    }
+
+    return text;
+  },
+  nextAnimation = function (thiz) {
+    expected = null;
+    var thiz_queue = thiz._queue;
     
-        funktion = function () {
-          thiz.element.textContent = text;
-        };
-    
-        this.addToQueue(funktion, 0, text);
-    
-        return this;
+    if (thiz._queueIndex < thiz_queue.length && !thiz._stopped) {
+      thiz._queueIndex += 1;
+      thiz_queue[thiz._queueIndex - 1].funktion();
+    } else if (!thiz._stopped) {
+      thiz._queueIndex = 0;
+      if (thiz.defaults.loop) {
+        thiz._queueIndex += 1;
+        thiz_queue[thiz._queueIndex - 1].funktion();
       } else {
-        return this.element.textContent;
+        thiz._stopped = true;
       }
-    };
+    }
+  },
+  // Helper methods and vars
+  isDefined = function (thing) {
+    return thing !== void 0;
+  },
+  nextFrame = function (frameRate) {
+    var now, difference;
     
-    Timeline.prototype.html = function (html) {
+    now = new Date().getTime();
+    expected = expected || now;
+    difference = now - expected;
+
+    expected += frameRate;
+    return Math.max(0, frameRate - difference);
+  },
+  expected,
+  timeout;
+  
+  TextAnimator.prototype = {
+
+    // Queued methods. These methods add callbacks to the queue that execute in sequence only when .go() is called
+    text: function (text) {
+      var thiz = this,
+          element = thiz.element,
+          funktion;
+
+      if (isDefined(text)) {
+        funktion = function () {
+          element.textContent = text;
+          nextAnimation(thiz);
+        };
+
+        addToQueue(thiz, "text", funktion, 0, text);
+
+        return thiz;
+      }
+      return element.textContent;
+    },
+
+    html: function (html) {
+      var thiz = this,
+          element = thiz.element,
+      funktion = function () {
+        element.innerHTML = html;
+        nextAnimation(thiz);
+      };
+
+      addToQueue(thiz, "html", funktion, 0, html.replace(/(<([^>]+)>)/ig,""));
+
+      return thiz;
+    },
+
+    switchElement: function (selector, endText) {
       var thiz = this,
       funktion = function () {
-        thiz.element.innerHTML = html;
+        thiz.element = $(selector)[0];
+        nextAnimation(thiz);
       };
-    
-      this.addToQueue(funktion, 0, html);
-    
-      return this;
-    };
-  
-    Timeline.prototype.switchElement = function (elementID) {
+
+      addToQueue(thiz, "switchElement", funktion, 0, endText || "");
+
+      return thiz;
+    },
+
+    custom: function (customFunktion, options) {
+      options || (options = {});
+
       var thiz = this,
-      funktion = function () {
-        thiz.element = typeof elementID === "string" ? document.getElementById(elementID) : elementID;
-      };
-    
-      this.addToQueue(funktion, 0, this.element.textContent); // TODO fix endText value
-    
-      return this;
-    };
-  
-    Timeline.prototype.custom = function (funktion, duration, endText) {
-      duration = duration || 0;
-      endText = endText || this.findText();
-    
-      this.addToQueue(funktion, duration, endText);
-    
-      return this;
-    };
-    
-    Timeline.prototype.frameByFrame = function (frames, loops, duration) {
+          duration = options.duration || 0,
+          endText = options.endText || findText(thiz),
+          funktion = function () {
+            customFunktion();
+            timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
+          };
+
+      addToQueue(thiz, "custom", funktion, duration, endText);
+
+      return thiz;
+    },
+
+    frameByFrame: function (frames, options) {
+      options || (options = {});
+
       var thiz = this,
+          element = thiz.element,
           len = frames.length,
           lastFrame = frames[len - 1],
-          totalFrames,
-          frameRate,
-          funktion,
-          i = 0;
-          
-      loops = loops || 1;
-      totalFrames = len * loops;
-      duration = duration || totalFrames * this.defaults.frameRate;
-      frameRate = duration / totalFrames;
-      
-      funktion = function () {
-        if (i < totalFrames && !thiz.stopped) {
-          thiz.element.textContent = frames[i % len];
-          
-          setTimeout(funktion, frameRate);
-          i++;
-        } else {
-          i = 0;
-        }
-      };
-      
-      this.addToQueue(funktion, duration, lastFrame);
-      
-      return this;
-    };
-  
-    Timeline.prototype.rollNumbers = function (startValue, endValue, increment, duration) {
+          loops = options.loops || 1,
+          totalFrames = len * loops,
+          duration = options.duration || totalFrames * thiz.defaults.frameRate,
+          frameRate = duration / totalFrames,
+          i = 0,
+          funktion = function () {
+            if (i < totalFrames && !thiz._stopped) {
+              element.textContent = frames[i % len];
+
+              timeout = setTimeout(funktion, nextFrame(frameRate));
+              i++;
+            } else {
+              i = 0;
+              nextAnimation(thiz);
+            }
+          };
+
+      addToQueue(thiz, "frameByFrame", funktion, duration, lastFrame);
+
+      return thiz;
+    },
+
+    rollNumbers: function (startValue, endValue, options) {
+      options || (options = {});
+
       var thiz = this,
+          element = thiz.element,
+          defaults = thiz.defaults,
           difference = endValue - startValue,
           newValue = startValue,
-          addFrame,
+          increment = options.increment || 1,
+          duration = options.duration,
+          addFrame = increment,
           totalFrames,
           frameRate,
           funktion,
           i = 0;
-    
-      increment = increment || 1;
-      addFrame = increment;
-    
+
       if (difference < 0) {
         difference = -difference;
         addFrame = -addFrame;
       }
 
       totalFrames = difference / increment;
-      frameRate = duration / totalFrames || this.defaults.frameRate;
-      duration = duration || this.defaults.frameRate * totalFrames;
-    
+      frameRate = duration / totalFrames || defaults.frameRate;
+      duration = duration || defaults.frameRate * totalFrames;
+
       funktion = function () {
-        if (i < totalFrames && !thiz.stopped) {
+        if (i < totalFrames && !thiz._stopped) {
           newValue += addFrame;
-          thiz.element.textContent = newValue;
-          
-          setTimeout(funktion, frameRate);
+          element.textContent = newValue;
+
+          timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
-          thiz.element.textContent = endValue;
+          element.textContent = endValue;
           newValue = startValue;
           i = 0;
+          nextAnimation(thiz);
         }
       };
-    
-      this.addToQueue(funktion, duration, endValue);
-    
-      return this;
-    };
-  
-    Timeline.prototype.erase = function (duration) {
+
+      addToQueue(thiz, "rollNumbers", funktion, duration, endValue);
+
+      return thiz;
+    },
+
+    erase: function (options) {
+      options || (options = {});
+
       var thiz = this,
-          originalText = this.findText(),
-          textArray = originalText.split(''),
-          len = originalText.length,
-          frameRate = duration / len || this.defaults.frameRate,
+          element = thiz.element,
+          text = findText(thiz),
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
+          len = textArray.length,
+          duration = options.duration || thiz.defaults.frameRate * len,
+          frameRate = duration / len,
           funktion,
           i = 0;
-        
-      duration = duration || this.defaults.frameRate * len;
-    
+
       funktion = function () {
-        if (i < len && !thiz.stopped) {
+        if (i < len && !thiz._stopped) {
           textArray.pop();
-          thiz.element.textContent = textArray.join('');
-          
-          setTimeout(funktion, frameRate);
+          element.textContent = textArray.join('');
+
+          timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
-          textArray = originalText.split('');
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split('');
           i = 0;
+          nextAnimation(thiz);
         }
       };
-    
-      this.addToQueue(funktion, duration, "");
-    
-      return this;
-    };
 
-    Timeline.prototype.typeIn = function (text, duration) {
+      addToQueue(thiz, "erase", funktion, duration, "");
+
+      return thiz;
+    },
+
+    typeIn: function (text, options) {
+      options || (options = {});
+
       var thiz = this,
-          textArray = text.split(''),
+          element = thiz.element,
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
           displayTextArray = [],
-          len = text.length,
-          frameRate = duration / len || this.defaults.frameRate,
+          len = textArray.length,
+          duration = options.duration || thiz.defaults.frameRate * len,
+          frameRate = duration / len,
           funktion,
           i = 0;
-        
-      duration = duration || this.defaults.frameRate * len;
-      
+
       funktion = function () {
-        if (i < len && !thiz.stopped) {
+        if (i < len && !thiz._stopped) {
           displayTextArray.push(textArray.shift());
-          thiz.element.textContent = displayTextArray.join('');
-          
-          setTimeout(funktion, frameRate);
+          element.textContent = displayTextArray.join('');
+          timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
           textArray = displayTextArray;
           displayTextArray = [];
           i = 0;
+
+          nextAnimation(thiz);
         }
       };
-    
-      this.addToQueue(funktion, duration, text);
-    
-      return this;
-    };
-  
-    Timeline.prototype.pause = function (duration) {
-      var endText = this.findText(),
-          funktion = function () {};
-        
+
+      addToQueue(thiz, "typeIn", funktion, duration, text);
+
+      return thiz;
+    },
+
+    pause: function (duration) {
       duration = duration || this.defaults.pauseDuration;
-      this.addToQueue(funktion, duration, endText);
-    
+
+      var thiz = this,
+          endText = findText(thiz),
+          funktion = function () {
+            timeout = setTimeout(function () { nextAnimation(thiz); }, duration);
+          };
+
+      addToQueue(thiz, "pause", funktion, duration, endText);
+
+      return thiz;
+    },
+
+    // If a truthy value is passed to this method, the queue is bypassed and any animation in progress stops immediately
+    stop: function (now) {
+      var thiz = this;
+      if (now) {
+        thiz._stopped = true;
+        clearTimeout(timeout);
+        expected = null;
+      } else {
+        var funktion = function () {
+              thiz._stopped = true;
+            };
+
+        addToQueue(thiz, "stop", funktion, 0, findText(thiz));
+      }
+
+      return thiz;
+    },
+
+    // Without arguments, .go() initiates the animation. If a textAnimator object is passed in, its queue is placed into the queue of this.
+    go: function (textAnimatorObj, options) {
+      options || (options = {});
+
+      var thiz = this,
+          len = thiz._queue.length,
+          funktion;
+
+      if (textAnimatorObj) {
+        funktion = function () {
+          textAnimatorObj.go();
+          if (options.delay) {
+            timeout = setTimeout(function () { nextAnimation(thiz); }, textAnimatorObj._duration);
+          } else {
+            nextAnimation(thiz);
+          }
+        };
+
+        addToQueue(thiz, "go", funktion, textAnimatorObj.duration, textAnimatorObj.endText);
+      } else if (len > 0) {
+        thiz._stopped = false;
+        nextAnimation(thiz);
+      }
+
+      return thiz;
+    },
+
+    // Default setters. These methods set defaults for a given TextAnimator instance.
+    frameRate: function (frameRate) {
+      this.defaults.frameRate = frameRate || this.defaults.frameRate;
+
       return this;
-    };
-  
-    Timeline.prototype.clearTimeline = function () {
-      this.queue = [];
-      this.duration = 0;
-      this.endText = "";
-    
+    },
+
+    pauseDuration: function (duration) {
+      this.defaults.pauseDuration = isDefined(duration) ? duration : this.defaults.pauseDuration;
+
       return this;
-    };
-  
-    return new Timeline(elementID);
+    },
+
+    loop: function (bool) {
+      this.defaults.loop = isDefined(bool) ? bool : true;
+
+      return this;
+    },
+
+    // Other methods
+    on: function (eventType, funktion, useCapture) {
+      $(this.element).on(eventType, funktion, useCapture)
+
+      return this;
+    },
+
+    clearTimeline: function () {
+      this._queue = [];
+      this._queueIndex = 0;
+      this._duration = 0;
+      this._endText = "";
+
+      return this.stop(true);
+    }
+
   };
+
+  var thisAtc, originalAtc = glob.atc;
+
+  atc = thisAtc = function (selector) {  
+    return new TextAnimator(selector);
+  };
+
+  atc.noConflict = function () {
+    atc = originalAtc;
+    return thisAtc;
+  }
   
+  // Global defaults and setters
   atc.defaults = {
     frameRate: 1000/24,
     pauseDuration: 2000,
@@ -319,14 +400,14 @@
   };
   
   atc.pauseDuration = function (duration) {
-    atc.defaults.pauseDuration = duration || atc.defaults.pauseDuration;
+    atc.defaults.pauseDuration = isDefined(duration) ? duration : atc.defaults.pauseDuration;
     
     return atc;
   };
   
   atc.loop = function (bool) {
-    atc.defaults.loop = typeof bool === "undefined" ? true : bool;
+    atc.defaults.loop = isDefined(bool) ? bool : true;
     
     return atc;
   };
-}());
+})(this);
