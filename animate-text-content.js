@@ -251,6 +251,7 @@
 
       var thiz = this,
           element = thiz.element,
+          preceedingText = options.typeOn ? findText(thiz) : (options.preceedingText || ""),
           textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
           displayTextArray = [],
           len = textArray.length,
@@ -262,7 +263,7 @@
       funktion = function () {
         if (i < len && !thiz._stopped) {
           displayTextArray.push(textArray.shift());
-          element.textContent = displayTextArray.join('');
+          element.textContent = preceedingText + displayTextArray.join('');
           timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
@@ -277,6 +278,11 @@
       addToQueue(thiz, "typeIn", funktion, duration, text);
 
       return thiz;
+    },
+
+    typeOn: function (text, options) {
+      (options || (options = {})).typeOn = true;
+      return this.typeIn(text, options);
     },
 
     pause: function (duration) {
