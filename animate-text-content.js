@@ -275,7 +275,7 @@
         }
       };
 
-      addToQueue(thiz, "typeIn", funktion, duration, text);
+      addToQueue(thiz, "typeIn", funktion, duration, preceedingText + text);
 
       return thiz;
     },
