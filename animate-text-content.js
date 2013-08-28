@@ -83,12 +83,11 @@
     // Queued methods. These methods add callbacks to the queue that execute in sequence only when .go() is called
     text: function (text) {
       var thiz = this,
-          element = thiz.element,
           funktion;
 
       if (isDefined(text)) {
         funktion = function () {
-          element.textContent = text;
+          thiz.element.textContent = text;
           nextAnimation(thiz);
         };
 
@@ -96,14 +95,13 @@
 
         return thiz;
       }
-      return element.textContent;
+      return thiz.element.textContent;
     },
 
     html: function (html) {
       var thiz = this,
-          element = thiz.element,
       funktion = function () {
-        element.innerHTML = html;
+        thiz.element.innerHTML = html;
         nextAnimation(thiz);
       };
 
@@ -144,7 +142,6 @@
       options || (options = {});
 
       var thiz = this,
-          element = thiz.element,
           len = frames.length,
           lastFrame = frames[len - 1],
           loops = options.loops || 1,
@@ -154,7 +151,7 @@
           i = 0,
           funktion = function () {
             if (i < totalFrames && !thiz._stopped) {
-              element.textContent = frames[i % len];
+              thiz.element.textContent = frames[i % len];
 
               timeout = setTimeout(funktion, nextFrame(frameRate));
               i++;
@@ -173,7 +170,6 @@
       options || (options = {});
 
       var thiz = this,
-          element = thiz.element,
           defaults = thiz.defaults,
           difference = endValue - startValue,
           newValue = startValue,
@@ -197,12 +193,12 @@
       funktion = function () {
         if (i < totalFrames && !thiz._stopped) {
           newValue += addFrame;
-          element.textContent = newValue;
+          thiz.element.textContent = newValue;
 
           timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
-          element.textContent = endValue;
+          thiz.element.textContent = endValue;
           newValue = startValue;
           i = 0;
           nextAnimation(thiz);
@@ -218,7 +214,6 @@
       options || (options = {});
 
       var thiz = this,
-          element = thiz.element,
           text = findText(thiz),
           textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
           len = textArray.length,
@@ -230,7 +225,7 @@
       funktion = function () {
         if (i < len && !thiz._stopped) {
           textArray.pop();
-          element.textContent = textArray.join('');
+          thiz.element.textContent = textArray.join('');
 
           timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
@@ -250,7 +245,6 @@
       options || (options = {});
 
       var thiz = this,
-          element = thiz.element,
           preceedingText = options.typeOn ? findText(thiz) : (options.preceedingText || ""),
           textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
           displayTextArray = [],
@@ -263,7 +257,7 @@
       funktion = function () {
         if (i < len && !thiz._stopped) {
           displayTextArray.push(textArray.shift());
-          element.textContent = preceedingText + displayTextArray.join('');
+          thiz.element.textContent = preceedingText + displayTextArray.join('');
           timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
