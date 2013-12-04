@@ -6,7 +6,7 @@
       useCapture = useCapture || false;
       el.addEventListener(eventType, funktion, useCapture);
     };
-    return arr
+    return arr;
   },
   TextAnimator = function (selector) {
     var thiz = this;
@@ -359,7 +359,7 @@
 
     // Other methods
     on: function (eventType, funktion, useCapture) {
-      $(this.element).on(eventType, funktion, useCapture)
+      $(this.element).on(eventType, funktion, useCapture);
 
       return this;
     },
@@ -377,14 +377,14 @@
 
   var thisAtc, originalAtc = glob.atc;
 
-  atc = thisAtc = function (selector) {  
+  atc = thisAtc = function (selector) {
     return new TextAnimator(selector);
   };
 
   atc.noConflict = function () {
     atc = originalAtc;
     return thisAtc;
-  }
+  };
   
   // Global defaults and setters
   atc.defaults = {
