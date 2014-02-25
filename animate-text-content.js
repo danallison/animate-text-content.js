@@ -1,5 +1,7 @@
 (function (glob) {
-  var $ = glob.$ || function (selector) {
+  "use strict";
+  var atc,
+  $ = glob.$ || function (selector) {
     var el = typeof selector === "string" ? document.getElementById(selector.replace(/#/, "")) : selector || {},
     arr = [el];
     arr.on = function (eventType, funktion, useCapture) {
@@ -215,7 +217,7 @@
 
       var thiz = this,
           text = findText(thiz),
-          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(""),
           len = textArray.length,
           duration = options.duration || thiz.defaults.frameRate * len,
           frameRate = duration / len,
@@ -225,12 +227,12 @@
       funktion = function () {
         if (i < len && !thiz._stopped) {
           textArray.pop();
-          thiz.element.textContent = textArray.join('');
+          thiz.element.textContent = textArray.join("");
 
           timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
-          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split('');
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split("");
           i = 0;
           nextAnimation(thiz);
         }
@@ -246,7 +248,7 @@
 
       var thiz = this,
           preceedingText = options.typeOn ? findText(thiz) : (options.preceedingText || ""),
-          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(''),
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(""),
           displayTextArray = [],
           len = textArray.length,
           duration = options.duration || thiz.defaults.frameRate * len,
@@ -257,7 +259,7 @@
       funktion = function () {
         if (i < len && !thiz._stopped) {
           displayTextArray.push(textArray.shift());
-          thiz.element.textContent = preceedingText + displayTextArray.join('');
+          thiz.element.textContent = preceedingText + displayTextArray.join("");
           timeout = setTimeout(funktion, nextFrame(frameRate));
           i++;
         } else {
@@ -375,15 +377,15 @@
 
   };
 
-  var thisAtc, originalAtc = glob.atc;
+  var originalAtc = glob.atc;
 
-  atc = thisAtc = function (selector) {
+  glob.atc = atc = function (selector) {
     return new TextAnimator(selector);
   };
 
   atc.noConflict = function () {
-    atc = originalAtc;
-    return thisAtc;
+    glob.atc = originalAtc;
+    return atc;
   };
   
   // Global defaults and setters
