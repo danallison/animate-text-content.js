@@ -281,6 +281,40 @@
       return this.typeIn(text, options);
     },
 
+    typeOver: function (text, options) {
+      options || (options = {});
+
+      var thiz = this,
+          existingText = options.existingText || findText(thiz),
+          existingTextArray = options.byWord ? existingText.match(/\S+\s*/g) : existingText.split(""),
+          textArray = options.byWord ? text.match(/\S+\s*/g) : text.split(""),
+          displayTextArray = existingTextArray.slice(),
+          len = Math.max(textArray.length, existingTextArray.length),
+          duration = options.duration || thiz.defaults.frameRate * len,
+          frameRate = duration / len,
+          funktion,
+          i = 0;
+
+      funktion = function () {
+        if (i < len && !thiz._stopped) {
+          displayTextArray[i] = textArray[i] || "";
+          thiz.element.textContent = displayTextArray.join("");
+          timeout = setTimeout(funktion, nextFrame(frameRate));
+          i++;
+        } else {
+          textArray = displayTextArray;
+          displayTextArray = existingTextArray.slice();
+          i = 0;
+
+          nextAnimation(thiz);
+        }
+      };
+
+      addToQueue(thiz, "typeIn", funktion, duration, text);
+
+      return thiz;
+    },
+
     pause: function (duration) {
       duration = duration || this.defaults.pauseDuration;
 
